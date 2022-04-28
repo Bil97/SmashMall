@@ -1,0 +1,109 @@
+﻿<Page
+    x:Class="SmashMall.UWP.Pages.Goods.Description"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SmashMall.UWP.Pages.Goods"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:SmashMall.Uno.Shared.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,5,0">
+                <Image x:Name="goodImage" Source="{Binding Converter={StaticResource ImageUrlConverter}}"/>
+                <GridView x:Name="imagesList" ItemsSource="{Binding}" Height="80" Margin="5"
+                          SelectionChanged="ImagesList_SelectionChanged"
+                          HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Converter={StaticResource ImageUrlConverter}}" Stretch="Uniform" Height="64"/>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="0,0,0,5">
+                
+                <TextBlock x:Name="goodName" TextWrapping="Wrap" 
+                           TextTrimming="CharacterEllipsis"/>
+                <RelativePanel BorderThickness="0,0,0,2">
+                    <TextBlock x:Name="goodBrand"/>
+                    <HyperlinkButton Name="goodsFromSimilarBrand" 
+                                     RelativePanel.AlignTopWith="goodBrand"
+                                     RelativePanel.RightOf="goodBrand"
+                                     Click="GoodsFromSimilarBrand_Click" />
+                </RelativePanel>
+                <StackPanel BorderThickness="0,0,0,2">
+                    <TextBlock x:Name="sellerTextBlock" 
+                               Text="{Binding Converter={StaticResource SellerConverter}}"/>
+                    <HyperlinkButton Content="Send Email"/>
+                    <HyperlinkButton Content="Call"/>
+                    <HyperlinkButton Content="View items from this seller"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="priceTextBlock" 
+                               Text="{Binding Converter={StaticResource CurrencyConverter}}"
+                                           TextDecorations="Strikethrough"/>
+                    <TextBlock x:Name="discountTextBlock" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <TextBlock x:Name="discountedPriceTextBlock"
+                           Text="{Binding Converter={StaticResource CurrencyConverter},
+                                                    ConverterParameter=Discount}"/>
+                <CheckBox x:Name="isSavedCheckBox" Content="Save for later"/>
+                <TextBlock x:Name="quantityTextBlock" Text="{Binding Path=Quantity}"/>
+                <Button Content="ADD TO CART" Style="{StaticResource OrangeButton}"
+                        Click="AddToCartButton_Click"/>
+            </StackPanel>
+
+        </Grid>
+
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Style="{StaticResource ItemsHeader}">
+                <TextBlock Text="Description"/>
+            </StackPanel>
+            <TextBlock x:Name="descriptionTextBlock" TextWrapping="Wrap" Margin="5"/>
+        </StackPanel>
+
+        <StackPanel Margin="0,0,0,5">
+            <StackPanel Style="{StaticResource ItemsHeader}">
+                <TextBlock Text="Features" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <ListView IsEnabled="False" HorizontalAlignment="Center">
+                <ListBoxItem>
+                    <TextBlock x:Name="weightTextBlock"/>
+                </ListBoxItem>
+                <ListBoxItem>
+                    <TextBlock x:Name="sizeTextBlock"/>
+                </ListBoxItem>
+                <ListBoxItem>
+                    <TextBlock x:Name="modelTextBlock"/>
+                </ListBoxItem>
+            </ListView>
+            <ListView x:Name="featuresList" ItemsSource="{Binding}" IsEnabled="False" 
+                      HorizontalAlignment="Center">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Feature}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <StackPanel>
+            <Grid Style="{StaticResource OrangeGrid}">
+                <TextBlock Text="Related Items"/>
+                <HyperlinkButton x:Name="moreRelatedItemsButton" 
+                                 Style="{StaticResource LinkButton}"
+                                 HorizontalAlignment="Right" Content="See more"/>
+            </Grid>
+            <controls:GoodsGridView x:Name="RelatedItems"/>
+        </StackPanel>
+
+    </StackPanel>
+</Page>

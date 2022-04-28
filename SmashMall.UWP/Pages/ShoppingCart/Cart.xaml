@@ -1,0 +1,89 @@
+﻿<Page
+    x:Class="SmashMall.UWP.Pages.ShoppingCart.Cart"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SmashMall.UWP.Pages.ShoppingCart"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Button Content="PROCEED TO CHECKOUT" Style="{StaticResource OrangeButton}"
+                    Click="CheckoutButton_Click" HorizontalAlignment="Left"/>
+            <TextBlock x:Name="TotalPriceTextBlock" HorizontalAlignment="Center"/>
+            <Button Content="Refresh" Style="{StaticResource OrangeButton}" HorizontalAlignment="Right"/>
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+            <GridView  x:Name="GoodsView" ItemsSource="{Binding}"  SizeChanged="GridView_SizeChanged"
+                       SelectionChanged="GoodsView_SelectionChanged">
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="{Binding Path=Good.Images[0], Converter={StaticResource ImageUrlConverter}}"
+                                   Height="100"  Margin="0,0,5,0"/>
+
+                            <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                <TextBlock Text="{Binding Path=Good.Name}" TextWrapping="Wrap" 
+                                       MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                <CheckBox Content="Save for later" IsChecked="{Binding Good.IsSaved}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="5,0,5,0">
+                                <TextBlock>
+                                    <Run Text="Unit price"/>
+                                    <Run Text="{Binding Path=Good.Price, Converter={StaticResource CurrencyConverter}}"
+                                         TextDecorations="Strikethrough"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Converter={StaticResource CurrencyConverter},
+                                                    ConverterParameter=Discount}"/>
+                                <TextBlock>
+                                <Run Text="{Binding Path=Good.Price, Converter={StaticResource CurrencyConverter}}"
+                                           TextDecorations="Strikethrough"/>
+                                            <Run Text="-"/>
+                                     <Run Text="{Binding Path=Good.Discount}"/>
+                                    <Run Text="%"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" Margin="5,0,5,0">
+                                <TextBlock>
+                                    <Run Text="Quantity: "/>
+                                    <Run Text="{Binding Path=Quantity}"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
+
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+            </GridView>
+        </ScrollViewer>
+    </Grid>
+</Page>

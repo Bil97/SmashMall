@@ -1,0 +1,60 @@
+﻿<controls:TeachingTip
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    x:Class="SmashMall.UWP.Controls.LoginCreateAccountTeachingTip"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SmashMall.UWP.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    PreferredPlacement="Center"
+    CloseButtonClick="TeachingTip_CloseButtonClick">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="FirstNameTextBlock" Text="First name" Margin="0,5,5,5"/>
+        <TextBox x:Name="FirstNameTextBox" Grid.Column="1" Margin="0,0,0,5"/>
+        <TextBlock x:Name="LastNameTextBlock" Text="Last name" Grid.Row="1" Margin="0,5,5,5"/>
+        <TextBox x:Name="LastNameTextBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,5"/>
+        <TextBlock Text="Email (Username)" Grid.Row="2" Margin="0,5,5,5"/>
+        <TextBox x:Name="EmailTextBox"  Grid.Row="2" Grid.Column="1" Margin="0,0,0,5"/>
+        <TextBlock x:Name="PhonenumberTextBlock" Text="Phonenumber: +254"  Grid.Row="3"  Margin="0,5,5,5"/>
+        <controls:NumberBox x:Name="PhonenumberBox"  Grid.Row="3" Grid.Column="1" Margin="0,0,0,5" PlaceholderText="07xxxxxxxx"/>
+
+        <TextBlock Text="Password" Grid.Row="4"  Margin="0,5,5,5"/>
+        <PasswordBox x:Name="PasswordBox" Grid.Row="4" Grid.Column="1"
+                                     Margin="0,0,0,5" />
+        <TextBlock x:Name="ConfirmPassword" Text="Confirm Password" Grid.Row="5"  Margin="0,5,5,5"/>
+        <PasswordBox x:Name="ConfirmPasswordBox" Grid.Row="5" Grid.Column="1"
+                                     Margin="0,0,0,5" />
+        <CheckBox x:Name="RememberMeCheckBox" Content="Remember me" Grid.Row="6"/>
+
+        <Button x:Name="SubmitButton" Grid.Row="7" Grid.ColumnSpan="2"
+                                Margin="0,0,0,5" HorizontalAlignment="Stretch"
+                                Click="SubmitButton_Click"/>
+        <HyperlinkButton Name="LoginCreateAccountButton" Grid.Row="8"
+                                         Grid.ColumnSpan="2"
+                                         Click="LoginCreateAccountButton_Click"/>
+        <HyperlinkButton Content="Forgot password" Grid.Row="9"
+                                         Grid.ColumnSpan="2"
+                                         Click="ForgotPasswordButton_Click"/>
+        <TextBlock x:Name="ErrorTextBlock" Foreground="Red" 
+                                   TextWrapping="Wrap" HorizontalAlignment="Center"
+                                   Grid.Row="10" Grid.ColumnSpan="2"/>
+    </Grid>
+</controls:TeachingTip>

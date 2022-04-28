@@ -1,0 +1,126 @@
+﻿<Page
+    x:Class="SmashMall.UWP.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SmashMall.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:SmashMall.UWP.Controls"
+    mc:Ignorable="d"        
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded">
+    <NavigationView x:Name="NavMenu" PaneTitle="Categories" 
+                    IsSettingsVisible="False"
+                    IsBackEnabled="True"
+                    BackRequested="NavMenu_BackRequested"
+                    IsBackButtonVisible="Auto"
+                    SelectionFollowsFocus="Enabled"
+                    ItemInvoked="NavMenu_ItemInvoked"
+                    MenuItemsSource="{Binding}">
+        <NavigationView.MenuItemTemplate>
+            <DataTemplate>
+                <NavigationViewItem  Content="{Binding Name}" Icon="Play"/>
+            </DataTemplate>
+        </NavigationView.MenuItemTemplate>
+
+        <NavigationView.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <AutoSuggestBox x:Name="Search" PlaceholderText="Search available products" 
+                                HorizontalAlignment="Stretch"
+                                Margin="50,3,10,3"
+                            TextChanged="Search_TextChanged" QueryIcon="Find" 
+                            QuerySubmitted="Search_QuerySubmitted" 
+                            SuggestionChosen="Search_SuggestionChosen" AutomationProperties.Name="Search" />
+
+                <DropDownButton x:Name="AccountDropDown" Content="Account" Grid.Column="1"
+                                CornerRadius="10">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem x:Name="LogoutMenuItem" Text="Logout" Click="LogoutMenuItem_Click"/>
+                            <MenuFlyoutItem x:Name="LoginMenuItem" Text="Login" Click="LoginMenuItem_Click"/>
+                            <MenuFlyoutItem x:Name="RegisterMenuItem" Text="Register" Click="RegisterMenuItem_Click"/>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <controls:LoginCreateAccountTeachingTip x:Name="LoginCreateAccountTeachingTip" />
+
+                <Button Grid.Column="2" Margin="10,0,10,0" CornerRadius="10"
+                        Click="ShoppingCartButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>
+                            <Run>Cart |</Run>
+                            <Run x:Name="ItemsText" />
+                        </TextBlock>
+                        <TextBlock x:Name="TotalPriceTextBlock" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </NavigationView.Header>
+        <NavigationView.PaneFooter>
+            <StackPanel>
+                <NavigationViewItem x:Name="HomeNavigationViewItem" Content="Home" Icon="Home"
+                                    Tapped="HomeNavigationViewItem_Tapped"/>
+
+                <NavigationViewItem x:Name="ThemeNavigationViewItem" Content="Theme" Icon="Caption"
+                                   Tapped="ThemeNavigationViewItem_Tapped">
+                    <NavigationViewItem.ContextFlyout>
+                        <MenuBarItemFlyout>
+                            <MenuFlyoutItem x:Name="SystemTheme" Text="System"
+                                                  Click="SystemTheme_Click"/>
+                            <MenuFlyoutItem x:Name="LightTheme" Text="Light"
+                                                  Click="LightTheme_Click"/>
+                            <MenuFlyoutItem x:Name="DarkTheme" Text="Dark"
+                                                  Click="DarkTheme_Click"/>
+                        </MenuBarItemFlyout>
+                    </NavigationViewItem.ContextFlyout>
+                </NavigationViewItem>
+
+                <NavigationViewItem x:Name="refreshNavigationViewItem" Icon="Refresh" 
+                                    Visibility="Collapsed" Content="Refresh" 
+                                    Tapped="RefreshNavigationViewItem_Tapped"/>
+            </StackPanel>
+        </NavigationView.PaneFooter>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Frame x:Name="MainFrame"/>
+
+                <VariableSizedWrapGrid Grid.Row="1" Orientation="Horizontal" MaximumRowsOrColumns="3">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Help"/>
+                        <Button Content=" Shipping and delivery"/>
+                        <Button Content="Terms and Conditions"/>
+                        <Button Content="Privacy policy"/>
+                        <Button Content="Return policy"/>
+                        <Button Content="Report a good"/>
+                    </StackPanel>
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Contact us"/>
+                        <TextBlock Text="Smashmall"/>
+                        <TextBlock Text="P.O Box 234, Nairobi"/>
+                        <TextBlock Text="Phone: 0700474988"/>
+                        <TextBlock Text="Email: smashmall@mail.com"/>
+                    </StackPanel>
+                    <StackPanel Margin="5">
+                        <TextBlock Text="About us"/>
+                        <TextBlock TextWrapping="Wrap">
+                            Smashmall is an online store where you can purchase a wide variety of items 
+                            such as mobile phones, tablets, desktop computers &amp; laptops, women's fashion, 
+                            men's fashion, furniture, electronics and more online and have them delivered to you.
+                        </TextBlock>
+                    </StackPanel>
+                </VariableSizedWrapGrid>
+            </Grid>
+        </ScrollViewer>
+
+    </NavigationView>
+</Page>
