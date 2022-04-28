@@ -1,0 +1,19 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Confirm email";
+}
+
+<h1>@ViewData["Title"]</h1>
+@if (ViewData["Title"].ToString().Contains("Error"))
+{
+    <div class="alert alert-warning alert-dismissible">
+        @ViewData["Message"]
+    </div>
+}
+else
+{
+    <div class="alert alert-success alert-dismissible">
+        @ViewData["Message"]
+    </div>
+}
