@@ -1,0 +1,763 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SmashMall</title>
+    <!--base href="/" /-->
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="css/floating-labels.css" rel="stylesheet" />
+    <link href="SmashMall.Client.styles.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+</head>
+
+<body class="custom-bg">
+    <header class="container sticky-top mb-3">
+        <nav class="navbar navbar-expand navbar-light bg-white justify-content-center d-flex flex-wrap  rounded border-bottom">
+            <div class="dropdown">
+                <button type="button" class="btn" data-toggle="dropdown">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Furniture</a>
+                    <a class="dropdown-item" href="#">Clothing and footware</a>
+                    <a class="dropdown-item" href="#">Electromics</a>
+                </div>
+            </div>
+            <a class="navbar-brand" href="#">
+                <h1><strong> SmashMall</strong></h1>
+            </a>
+
+            <div class="d-none d-md-block w-50">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <select class="form-control input-group-text" style="max-width: 112px;">
+                            <option value="">Black friday</option>
+                            <option value="">Computers and accessories</option>
+                            <option value="">Electronics</option>
+                        </select>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Search here" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn custom-bg-orange text-white">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="custom-nav-link" href="#">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="custom-nav-link" href="#">
+                        <span class="fa fa-shopping-cart"></span>Cart
+                    </a>
+                </li>
+            </ul>
+            <br/>
+            <div class="d-md-none pb-2 bg-white">
+                <div class="input-group p-3 mx-auto bg-white">
+                    <div class="input-group-prepend">
+                        <select class="form-control input-group-text" style="max-width: 112px;">
+                            <option value="">Black friday</option>
+                            <option value="">Computers and accessories</option>
+                            <option value="">Electronics</option>
+                        </select>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Search here" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn custom-bg-orange text-white">Search</button>
+                    </div>
+                </div>
+            </div>
+        </nav>        
+    </header>
+
+    <main class="container">
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="d-none d-md-block" style="min-width: 25%;">
+                    <div class="card border-0 shadow">
+                        <div class="card-body p-2">
+                            <div class="card-title"><strong>Price</strong></div>
+                            <div class="form-label-group">
+                                <input type="number" min="0" id="minPrice" class="form-control"
+                                    placeholder="Mininimum" />
+                                <label for="minPrice">Mininimum</label>
+                            </div>
+                            <div class="form-label-group">
+                                <input type="number" min="100" id="minPrice" class="form-control"
+                                    placeholder="Maximum" />
+                                <label for="minPrice">Maximum</label>
+                            </div>
+                            <button class="btn btn-block custom-bg-orange text-white">APPLY</button>
+                        </div>
+                    </div>
+                    <div class="list-group bg-white mt-3">
+                        <span
+                            class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Categories</strong></span>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Furniture</a>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Clothing and footware</a>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Electromics</a>
+                    </div>
+                    <div class="list-group bg-white mt-3">
+                        <span
+                            class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Brand</strong></span>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Samsung</a>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Sony</a>
+                        <a href="#" class="list-group-item custom-nav-link p-1">Phillips</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9 mt-3">
+
+                <div class="card-body">
+                    <div class="card-title p-0">
+                        <h1>800 search results</strong>
+                    </div>
+                </div>
+
+                <div id="filtersNav" class="filters-nav custom-bg d-md-none">
+                    <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+                    <div class="card border-0 shadow">
+                            <div class="card-body p-2">
+                                <div class="card-title"><strong>Price</strong></div>
+                                <div class="form-label-group">
+                                    <input type="number" min="0" id="minPrice" class="form-control" placeholder="Mininimum" />
+                                    <label for="minPrice">Mininimum</label>
+                                </div>
+                                <div class="form-label-group">
+                                    <input type="number" min="100" id="minPrice" class="form-control" placeholder="Maximum" />
+                                    <label for="minPrice">Maximum</label>
+                                </div>
+                                <button class="btn btn-block custom-bg-orange text-white">APPLY</button>
+                            </div>
+                        </div>
+                        <div class="list-group bg-white mt-3">
+                            <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Categories</strong></span>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Furniture</a>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Clothing and footware</a>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Electromics</a>
+                        </div>
+                        <div class="list-group bg-white mt-3">
+                            <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Brand</strong></span>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Samsung</a>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Sony</a>
+                            <a href="#" class="list-group-item custom-nav-link p-1">Phillips</a>
+                        </div>
+                    </div>
+
+
+                <div class="card-header bg-white">
+                    <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                    <span class="card-title"><strong> SORT BY</strong> </span>
+                    <!-- display NAME(A - Z) if sorting by name from a - z otherwise display NAME(Z - A)-->
+                    <button class="btn custom-bg-orange text-white ml-3">NAME (A - Z)</button>
+                    <!-- display PRICE(L - H) if sorting by name from lowest to highest otherwise display PRICE(H - L)-->
+                    <button class="btn custom-bg-orange text-white ml-3">PRICE (L - H)</button>
+                    <button class="btn custom-bg-orange text-white float-right">Reload</button>
+                </div>
+                <div class="card-body bg-white">
+
+                    <div class="row">
+                        <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-sm-3 col-4 p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <img src="images/default-image.png" alt="Card image"
+                                        class="custom-display-image rounded">
+                                    <h4 class="card-title">John Doe</h4>
+                                    <a href="#" class="card-link stretched-link">
+                                    </a>
+                                    <div class="card-text"><del>KSH 1200</del> <span
+                                            class="custom-bg-orange float-right">-25%</span></div>
+                                    <div class="card-text">KSH 1200</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header custom-bg-orange">
+                <div class="card-title d-inline">
+                    <h3><b>Items you may like</b>
+                        <small> <a class="float-right text-white custom-nav-link" href="#">See more</a></small>
+                    </h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-sm-3 col-4 p-1">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+                                <img src="images/default-image.png" alt="Card image"
+                                    class="custom-display-image rounded">
+                                <h4 class="card-title">John Doe</h4>
+                                <a href="#" class="card-link stretched-link">
+                                </a>
+                                <div class="card-text"><del>KSH 1200</del> <span
+                                        class="custom-bg-orange float-right">-25%</span></div>
+                                <div class="card-text">KSH 1200</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <h3>Smashmall - Online shopping market</h3>
+            <p></p>
+        </div>
+
+    </main>
+
+    <footer class="footer bg-dark text-white p-2">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4 col-6 p-0">
+                    <h4>Help</h4>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Shipping and delivery</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Terms and Conditions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Privacy policy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Return policy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Report a good</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-sm-4 col-6 p-0">
+                    <h4>Contact us</h4>
+                    <p>
+                        Smashmall
+                        <br />
+                        P.O Box 234, Nairobi
+                        <br />
+                        Phone: 0700474988
+                        <br />
+                        Email: smashmall@mail.com
+                    </p>
+                </div>
+
+                <div class="col-sm-4 p-0">
+                    <h4>About us</h4>
+                    <p>
+                        Smashmall is an online store where you can purchase a wide variety of items
+                        such as mobile phones, tablets, desktop computers & laptops,
+                        women's fashion, men's fashion, furniture, electronics and more
+                        online and have them delivered to you.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        function openNav() {
+            document.getElementById("filtersNav").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("filtersNav").style.width = "0";
+        }
+    </script
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
