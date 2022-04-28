@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SmashMall</title>
+    <!--base href="/" /-->
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="css/floating-labels.css" rel="stylesheet" />
+    <link href="SmashMall.Client.styles.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+</head>
+
+<body class="bg-light">
+
+
+    <span class="custom-bg-orange text-white p-2 d-md-none" style="cursor:pointer"
+        onclick="openNav()"><strong>&#9776;</strong> </span>
+
+    <div id="filtersNav" class="filters-nav">
+        <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+        <div class="card border-0 shadow">
+            <div class="card-body p-2">
+                <div class="card-title"><strong>Price</strong></div>
+                <div class="form-label-group">
+                    <input type="number" min="0" id="minPrice" class="form-control" placeholder="Mininimum" />
+                    <label for="minPrice">Mininimum</label>
+                </div>
+                <div class="form-label-group">
+                    <input type="number" min="100" id="minPrice" class="form-control" placeholder="Maximum" />
+                    <label for="minPrice">Maximum</label>
+                </div>
+                <button class="btn btn-block custom-bg-orange text-white">APPLY</button>
+            </div>
+        </div>
+        <div class="list-group bg-white mt-3">
+            <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Categories</strong></span>
+            <a href="#" class="list-group-item custom-nav-link p-1">Furniture</a>
+            <a href="#" class="list-group-item custom-nav-link p-1">Clothing and footware</a>
+            <a href="#" class="list-group-item custom-nav-link p-1">Electromics</a>
+        </div>
+        <div class="list-group bg-white mt-3">
+            <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Brand</strong></span>
+            <a href="#" class="list-group-item custom-nav-link p-1">Samsung</a>
+            <a href="#" class="list-group-item custom-nav-link p-1">Sony</a>
+            <a href="#" class="list-group-item custom-nav-link p-1">Phillips</a>
+        </div>
+    </div>
+    <script>
+        function openNav() {
+            document.getElementById("filtersNav").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("filtersNav").style.width = "0";
+        }
+    </script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
