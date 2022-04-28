@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converter="clr-namespace:SmashMall.App.Services.Converters"
+             x:Class="SmashMall.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/MyResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converter:CurrencyConverter x:Key="CurrencyConverter" />
+            <converter:SellerConverter x:Key="SellerConverter" />
+            <converter:ImageUrlConverter x:Key="ImageUrlConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

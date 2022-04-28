@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:SmashMall.App.Controls;assembly=SmashMall.App"
+             x:Class="SmashMall.App.Pages.Goods.Description">
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <StackLayout Margin="0,0,5,0">
+                    <Image x:Name="GoodImage" Source="{Binding Converter={StaticResource ImageUrlConverter}}" />
+                    <ListView x:Name="ImagesList" ItemsSource="{Binding}" Height="80" Margin="5"
+                              ItemTapped="ImagesList_OnItemTapped"
+                              HorizontalOptions="Center" VerticalOptions="End">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding Converter={StaticResource ImageUrlConverter}}"
+                                       Aspect="AspectFit" Height="64" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackLayout>
+
+                <StackLayout Grid.Column="1" Margin="0,0,0,5">
+
+                    <Label x:Name="GoodName" />
+                    <StackLayout>
+                        <Label x:Name="GoodBrand" />
+                        <Button x:Name="GoodsFromSimilarBrand"
+                                Clicked="GoodsFromSimilarBrand_Click" />
+                    </StackLayout>
+                    <StackLayout>
+                        <Label x:Name="SellerTextBlock"
+                               Text="{Binding Converter={StaticResource SellerConverter}}" />
+                        <Button Text="Send Email" />
+                        <Button Text="Call" />
+                        <Button Text="View items from this seller" />
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal">
+                        <Label x:Name="PriceTextBlock"
+                               Text="{Binding Converter={StaticResource CurrencyConverter}}"
+                               TextDecorations="Strikethrough" />
+                        <Label x:Name="DiscountTextBlock" HorizontalOptions="End" />
+                    </StackLayout>
+                    <Label x:Name="DiscountedPriceTextBlock"
+                           Text="{Binding Converter={StaticResource CurrencyConverter},
+                                                    ConverterParameter=Discount}" />
+                    <StackLayout>
+                        <CheckBox x:Name="IsSavedCheckBox" />
+                        <Label Text="Save for later" />
+                    </StackLayout>
+                    <Label x:Name="QuantityTextBlock" Text="{Binding Path=Quantity}" />
+                    <Button Text="ADD TO CART" Style="{StaticResource OrangeButton}"
+                            Clicked="AddToCartButton_Click" />
+                </StackLayout>
+
+            </Grid>
+
+            <StackLayout>
+                <StackLayout Orientation="Horizontal" Style="{StaticResource ItemsHeader}">
+                    <Label Text="Description" />
+                </StackLayout>
+                <Label x:Name="DescriptionTextBlock" Margin="5" />
+            </StackLayout>
+
+            <StackLayout Margin="0,0,0,5">
+                <StackLayout Style="{StaticResource ItemsHeader}">
+                    <Label Text="Features" HorizontalOptions="Center" />
+                </StackLayout>
+                <TableView>
+                    <TableRoot>
+                        <TableSection>
+                            <TextCell x:Name="WeightText"/>
+                            <TextCell x:Name="SizeText"/>
+                            <TextCell x:Name="ModelText"/>
+                        </TableSection>
+                    </TableRoot>
+                </TableView>
+                <ListView x:Name="FeaturesList" ItemsSource="{Binding}" IsEnabled="False"
+                          HorizontalOptions="Center">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding Feature}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackLayout>
+
+            <StackLayout>
+                <Grid Style="{StaticResource OrangeGrid}">
+                    <Label Text="Related Items" />
+                    <Button x:Name="MoreRelatedItemsButton"
+                            Style="{StaticResource LinkButton}"
+                            HorizontalOptions="End" Text="See more" />
+                </Grid>
+                <controls:GoodsView x:Name="RelatedItems" />
+            </StackLayout>
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

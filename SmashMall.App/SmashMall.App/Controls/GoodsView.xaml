@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmashMall.App.Controls.GoodsView">
+    <ContentView.Content>
+        <StackLayout>
+            <Label x:Name="TextB"/>
+            <ListView x:Name="GoodsListView" 
+              ItemsSource="{Binding}"
+              ItemTapped="GoodsListView_ItemTapped">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid Padding="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackLayout>
+                                    <Image Source="{Binding Converter={StaticResource ImageUrlConverter}}"/>
+                                    <Label Text="{Binding Path=Name}" MaxLines="2"/>
+                                    <StackLayout Orientation="Horizontal">
+                                        <Label Text="{Binding Converter={StaticResource CurrencyConverter}}"
+                                           TextDecorations="Strikethrough"/>
+                                        <StackLayout Margin="5,0,2,0" Orientation="Horizontal"  HorizontalOptions="End">
+                                            <Label x:Name="minus" Text="    -"/>
+                                            <Label x:Name="discount" Text="{Binding Path=Discount}" />
+                                            <Label Text="%"/>
+                                        </StackLayout>
+                                    </StackLayout>
+                                    <Label Text="{Binding Converter={StaticResource CurrencyConverter},
+                                                    ConverterParameter=Discount}"/>
+                                    <StackLayout>
+                                        <CheckBox IsChecked="{Binding IsSaved}" CheckedChanged="CheckBox_CheckedChanged"/>
+                                        <Label Text="Save for later"/>
+                                    </StackLayout>
+                                    <Label Text="{Binding Converter={StaticResource SellerConverter}}" />
+                                    <StackLayout Orientation="Horizontal">
+                                        <Label Text="{Binding Path=Quantity}"/>
+                                        <Label Text=" in stock"/>
+                                    </StackLayout>
+                                </StackLayout>
+                                <Button Text="ADD TO CART" Grid.Row="1" Style="{StaticResource OrangeButton}" Clicked="AddToCartButton_Click" CommandParameter="{Binding}"/>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackLayout>
+
+    </ContentView.Content>
+</ContentView>

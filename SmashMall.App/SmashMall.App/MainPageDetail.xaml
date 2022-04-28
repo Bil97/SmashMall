@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmashMall.App.MainPageDetail"
+             Title="Detail">
+    <StackLayout>
+        <ScrollView>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackLayout>
+                    <Picker x:Name="AccountPicker" x:FieldModifier="Internal"></Picker>
+                </StackLayout>
+                <Frame Grid.Row="1" x:Name="MainFrame" x:FieldModifier="Internal"/>
+                <StackLayout Grid.Row="2" BackgroundColor="Gray">
+                    <StackLayout Margin="5">
+                        <Button Text=" Shipping and delivery"/>
+                        <Button Text="Terms and Conditions"/>
+                        <Button Text="Privacy policy"/>
+                        <Button Text="Return policy"/>
+                        <Button Text="Report a good"/>
+                    </StackLayout>
+                    <StackLayout Margin="5">
+                        <Label Text="Contact us" FontAttributes="Bold" FontSize="Title"/>
+                        <Label Text="SmashMall"/>
+                        <Label Text="P.O Box 234, Nairobi"/>
+                        <Label Text="Phone: 0700474988"/>
+                        <Label Text="Email: smashmall@mail.com"/>
+                    </StackLayout>
+                    <StackLayout Margin="5">
+                        <Label Text="About us" FontAttributes="Bold" FontSize="Title"/>
+                        <Label x:Name="AboutUsLabel"/>
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+        </ScrollView>
+
+    </StackLayout>
+</ContentPage>
