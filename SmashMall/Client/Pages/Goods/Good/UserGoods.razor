@@ -1,0 +1,294 @@
+﻿@page "/goods/my-goods"
+@attribute [Authorize]
+
+<h2>My goods</h2>
+
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <GoodsNavMenu />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+        <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <GoodsNavMenu />
+        </div>
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                <span class="card-title"><strong> SORT BY</strong> </span>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByPrice">PRICE @sortByPrice </button>
+
+                <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetGoods">
+                    Reload
+
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-reload"></span>
+                    }
+                </button>
+
+                <button class="btn custom-bg-orange text-white float-right" data-toggle="modal" data-target="#addModal">
+                    <span class="oi oi-plus mr-1" aria-hidden="true"></span> Add
+                </button>
+                <!-- Add modal -->
+                <div class="modal fade" id="addModal" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h4 class="modal-title">Add Good</h4>
+                                <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal"> &times;</button>
+                            </div>
+                            <!-- Modal body -->
+                            <div class="modal-body">
+                                <Add Good="new Good()" Error="@null" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-body">
+                @if (MyGoods == null)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                    <em>Loading...</em>
+                }
+                @if (MyGoods.Count == 0)
+                {
+                    <div class="text-center">
+                        You have not added any good for sale. If you add, the good will appear here
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var good in MyGoods)
+                        {
+                            <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                                <div class="card border-0 custom-hover-shadow h-100">
+                                    <div class="card-body p-1">
+                                        <a href="goods/@good.Id/description" class="custom-nav-link">
+                                            @{var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                                                <img src="@source" alt="@good.Name" class="mx-auto d-block custom-display-image rounded">
+                                            }
+                                            <div class="card-title">@good.Name</div>
+                                        </a>
+                                        <div class="card-text">Brand: @good.Brand?.Name</div>
+                                        <div class="card-text">Subcategory: @good.Brand?.Subcategory.Name</div>
+                                        <div class="card-text">Category: @good.Brand?.Subcategory.GoodCategory.Name</div>
+                                        @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                        @if (good.Discount > 0)
+                                        {
+                                            <div class="card-text">
+                                                <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                            </div>
+                                            var discount = (decimal)(100 - good.Discount);
+                                            var price = discount / 100 * good.Price;
+                                            var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                            <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                        }
+
+                                        <div class="card-text">
+                                            Quantity:
+                                            <input type="number" min="0" value="@good.Quantity" @onchange="(e)=>ChangeQuantity(good,e)" class="form-control" />
+                                        </div>
+
+                                    </div>
+                                    <div class="card-footer border-0 bg-white p-1">
+                                        <div class=" d-flex flex-wrap">
+                                            <button class="btn custom-bg-orange text-white flex-fill m-1" data-toggle="modal" data-target="#detailsModal" @onclick="()=>ShowModal(good)">Details</button>
+                                            <button class="btn custom-bg-orange text-white flex-fill m-1" data-toggle="modal" data-target="#imagesModal" @onclick="()=>ShowModal(good)">Images</button>
+                                        </div>
+                                        <div class=" d-flex flex-wrap">
+                                            <a href="goods/@good.Id/details" class="btn custom-bg-orange text-white text-center flex-fill m-1">Description</a>
+                                            <button class="btn btn-danger flex-fill m-1" data-toggle="modal" data-target="#deleteModal" @onclick="()=>ShowModal(good)">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <!-- Edit modal-->
+                    <div class="modal fade" id="detailsModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Good Details</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Edit Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End edit modal-->
+                    <!-- Images modal-->
+                    <div class="modal fade" id="imagesModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Good Details</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Images Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End images modal-->
+                    <!-- Delete modal-->
+                    <div class="modal fade" id="deleteModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Delete Good</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Delete Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End delete modal-->
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Good> MyGoods { get; set; }
+    public bool IsLoading { get; set; }
+    private Good Good { get; set; }
+    private string sortByPrice = "";
+    private string sortByName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        MyGoods = new List<Good>();
+        Good = new Good();
+        await CloseModal();
+    }
+
+    private async Task GetGoods()
+    {
+        try
+        {
+            IsLoading = true;
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var result = await _httpClient.GetAsync($"api/Goods/{authState.User.Identity.Name}");
+            IsLoading = false;
+            if (result.IsSuccessStatusCode)
+            {
+                using var stream = await result.Content.ReadAsStreamAsync();
+                MyGoods = await System.Text.Json.JsonSerializer.DeserializeAsync<List<Good>>(stream,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+            }
+        }
+        catch { }
+    }
+
+    private void ShowModal(Good good)
+    {
+        Good = good;
+    }
+
+    private async Task CloseModal()
+    {
+        Good = new Good();
+        await GetGoods();
+    }
+
+    private void SortByPrice()
+    {
+        if (sortByPrice == "" || sortByPrice == "H - L")
+        {
+            sortByPrice = "L - H";
+            MyGoods = MyGoods.OrderBy(x => x.Price).ToList();
+        }
+        else
+        {
+            sortByPrice = "H - L";
+            MyGoods = MyGoods.OrderByDescending(x => x.Price).ToList();
+        }
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            MyGoods = MyGoods.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            MyGoods = MyGoods.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+    private async Task ChangeQuantity(Good good, ChangeEventArgs e)
+    {
+        var quantity = Convert.ToInt32(e.Value);
+        try
+        {
+            var result = await _httpClient.PostAsJsonAsync<Good>($"api/Goods/quantity{quantity}", good);
+            if (!result.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Error:" + (await result.Content.ReadAsStringAsync()));
+            }
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

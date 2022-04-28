@@ -1,0 +1,68 @@
+﻿@inherits LayoutComponentBase
+
+<header class="border-bottom bg-white sticky-top mb-3">
+    <div class="container">
+        <NavMenu />
+    </div>
+</header>
+<main class="container mb-3">
+    <div class="content px-4">
+        @Body
+    </div>
+    <button onclick="topFunction()" id="scroll-to-top" class="btn custom-bg-orange text-white rounded ml-2 mb-2 p-1 fixed-bottom" title="Go to top">Top</button>
+    <div class="mt-3">
+        <h3>Smashmall - Online shopping market</h3>
+    </div>
+
+</main>
+<footer class="footer bg-dark text-white p-2">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4 col-6">
+                <h4>Help</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Shipping and delivery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Terms and Conditions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Privacy policy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Return policy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Report a good</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-sm-4 col-6">
+                <h4>Contact us</h4>
+                <p>
+                    Smashmall
+                    <br />
+                    P.O Box 234, Nairobi
+                    <br />
+                    Phone: 0700474988
+                    <br />
+                    Email: smashmall@mail.com
+                </p>
+            </div>
+
+            <div class="col-sm-4">
+                <h4>About us</h4>
+                <p>
+                    Smashmall is an online store where you can purchase a wide variety of items
+                    such as mobile phones, tablets, desktop computers & laptops,
+                    women's fashion, men's fashion, furniture, electronics and more
+                    online and have them delivered to you.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+@code{
+
+}

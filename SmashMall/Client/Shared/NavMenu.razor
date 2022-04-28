@@ -1,0 +1,196 @@
+﻿@implements IDisposable
+
+<div class="container">
+    <nav class="navbar navbar-expand navbar-light justify-content-center">
+
+        <div class="dropdown">
+            <button type="button" class="btn" data-toggle="dropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="dropdown-menu">
+                @if (GoodCategories != null)
+                {
+                    @foreach (var category in GoodCategories)
+                    {
+                        var link = $"category/{category.Name}";
+                        <NavLink class="dropdown-item custom-nav-link" href="@link">
+                            @category.Name
+                        </NavLink>
+                    }
+                }
+            </div>
+        </div>
+
+        <a class="navbar-brand" href="/">
+            <h3><strong> SmashMall</strong></h3>
+        </a>
+
+        <div class="d-none d-lg-block w-50">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <select class="form-control input-group-text" style="max-width: 112px;" @bind="FilterSearch">
+                        <option value="" disabled>Select subcategory</option>
+                        <option value="All" selected>All</option>
+                        <option value="BlackFriday">Black Friday</option>
+                        @if (Subcategories != null)
+                        {
+                            foreach (var subcategory in Subcategories)
+                            {
+                                <option value="@subcategory.Name">@subcategory.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <input type="text" class="form-control" @bind="Item" placeholder="Search here" />
+                <div class="input-group-append">
+                    @if (string.IsNullOrEmpty(Item))
+                    {
+                        Link = "/";
+                    }
+                    else if (FilterSearch == "All") { Link = Item; }
+                    else if (FilterSearch == "BlackFriday") { Link = $"deals/BlackFriday"; }
+                    else { Link = $"search/{Item}/{FilterSearch}"; }
+                    <a class="btn custom-bg-orange text-white" href="@Link">Search</a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="p-2 dropdown">
+            <button type="button" class="btn dropdown-toggle custom-nav-link" data-toggle="dropdown">
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="rounded-circle oi oi-person"></span>
+                        <span>Hi, @UserDetails?.FirstName</span>
+                    </Authorized>
+                    <NotAuthorized>
+                        <span class="rounded-circle oi oi-person"></span>
+                        Account
+                    </NotAuthorized>
+                </AuthorizeView>
+            </button>
+
+            <div class="dropdown-menu">
+                <LoginDisplay />
+            </div>
+        </div>
+        <NavLink href="cart" class="custom-nav-link border custom-bg text-nowrap  small rounded">
+            Cart
+            |
+            <strong>@StateContainer.GoodsCount</strong>  items
+            | <strong>@StateContainer.TotalPrice</strong>
+        </NavLink>
+
+    </nav>
+</div>
+<div class="container">
+    <div class="d-lg-none pb-2 bg-white">
+        <div class="input-group p-3 mx-auto bg-white">
+            <div class="input-group-prepend">
+                <select class="form-control input-group-text" style="max-width: 100px;" @bind="FilterSearch">
+                    <option value="All" selected>All</option>
+                    <option value="BlackFriday">Black Friday</option>
+                    @if (Subcategories != null)
+                    {
+                        foreach (var subcategory in Subcategories)
+                        {
+                            <option value="@subcategory.Name">@subcategory.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <input type="text" class="form-control" placeholder="Search here" />
+            <div class="input-group-append">
+                @if (string.IsNullOrEmpty(Item))
+                {
+                    Link = "/";
+                }
+                else if (FilterSearch == "All") { Link = Item; }
+                else if (FilterSearch == "BlackFriday") { Link = $"deals/BlackFriday/{Item}"; }
+                else { Link = $"search/{Item}/{FilterSearch}"; }
+                <a class="btn custom-bg-orange text-white" href="@Link">Search</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GoodCategory> GoodCategories { get; set; }
+    private List<GoodSubcategory> Subcategories { get; set; }
+    private string Link { get; set; }
+    private string Item { get; set; }
+    private string FilterSearch { get; set; } = "All";
+    private UserDetails UserDetails { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateContainer.OnChange += StateHasChanged;
+        await GetUser();
+        try
+        {
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var result = await _http.Client.GetAsync($"api/cart/count/{userId}");
+
+            if (result.IsSuccessStatusCode)
+            {
+                var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+                await _localStorage.SetItemAsync("userId", cart.UserId);
+                StateContainer.SetCount(cart.ItemsCount);
+                StateContainer.SetPrice(cart.TotalPrice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        await GetGoodCategories();
+        await GetSubcategories();
+    }
+
+    private async Task GetGoodCategories()
+    {
+        try
+        {
+            GoodCategories = await _http.Client.GetFromJsonAsync<List<GoodCategory>>("api/GoodsCategories/category-goods");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task GetSubcategories()
+    {
+        try
+        {
+            Subcategories = await _http.Client.GetFromJsonAsync<List<GoodSubcategory>>("api/GoodsSubcategories/good-subcategories");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task GetUser()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                UserDetails = await _httpClient.GetFromJsonAsync<UserDetails>($"api/ApplicationUsers/{authState.User.Identity.Name}");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= StateHasChanged;
+    }
+}

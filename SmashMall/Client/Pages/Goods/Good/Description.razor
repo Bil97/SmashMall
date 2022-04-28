@@ -1,0 +1,410 @@
+﻿@page "/goods/{GoodId}/description"
+
+@if (Good == null)
+{
+    <em class="text-center">Loading...</em>
+}
+else
+{
+    <div class="card mb-3 border-0">
+        <div class="card-body custom-bg">
+            <div class="row">
+                <div class="col-md-8 shadow p-3 mb-3 bg-white rounded">
+                    <div class="row">
+                        <div class="col-6">
+                            <div id="custCarousel" class="carousel slide" data-ride="carousel" data-interval="20000" data-pause="hover" align="center">
+                                <!-- slides -->
+                                <div class="carousel-inner rounded">
+                                    <div class="carousel-item active">
+                                        @{var image1 = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{Good?.Images?.FirstOrDefault()?.Name}";
+                                            <img src="@image1" alt="@Good?.Name">
+                                        }
+                                    </div>
+                                    @for (int i = 1; i < Good?.Images?.Count; i++)
+                                    {
+                                        var imagePath = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{Good?.Images.ToList()[i].Name}";
+
+                                        <div class="carousel-item">
+                                            <img src="@imagePath" alt="@Good?.Name">
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Thumbnails -->
+                                <ol class="carousel-indicators list-inline p-5">
+                                    <li class="list-inline-item active">
+                                        <a id="carousel-selector-0" class="selected" data-slide-to="0" data-target="#custCarousel">
+                                            @{ var image = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{@Good?.Images?.FirstOrDefault()?.Name}";
+                                                <img src="@image" alt="@Good?.Name" class="img-fluid" />
+                                            }
+                                        </a>
+                                    </li>
+
+                                    @for (int i = 1; i < Good?.Images?.Count; i++)
+                                    {
+                                        var imagePath = $"{BaseApi.Url}{ BaseApi.ItemsPhotosApi}/{Good?.Images?.ToList()[i]?.Name}";
+
+                                        <li class="list-inline-item">
+                                            <a id="carousel-selector-@i" data-slide-to="@i" data-target="#custCarousel">
+                                                <img src="@imagePath" alt="@Good?.Name" class="img-fluid" />
+                                            </a>
+                                        </li>
+                                    }
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="col-6 p-2">
+                            <p class="card-title">@Good.Name</p>
+                            <div>Brand: @Good.Brand?.Name | <a href="category/subcategory/brand/@Good.Brand?.Name"> Similar items from @Good.Brand?.Name</a></div>
+                            <hr />
+                            @if (Good?.UserDetails?.Roles.Contains("Admin") == true)
+                            {
+                                <div>Seller: SmashMall</div>
+                            }
+                            else
+                            {
+                                <div>Seller: @Good?.UserDetails?.Name</div>
+                            }
+                            <div><a href="mailto:@Good.UserDetails?.Email">Send email</a></div>
+                            <div><a href="tel:@Good.UserDetails?.Phonenumber">Call</a></div>
+                            <div><a href="goods/seller/@Good.UserId">View items from this seller</a></div>
+
+                            <hr />
+                            @{ var originalPrice = new CurrencyConverter(Good.Price, BaseApi.Culture);}
+                            @if (Good.Discount > 0)
+                            {
+                                <div class="card-text">
+                                    <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@Good.Discount%</span>
+                                </div>
+                                var discount = (decimal)(100 - Good.Discount);
+                                var price = discount / 100 * Good.Price;
+                                var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                <h4 class="custom-text-orange">@priceWithDiscount.Currency</h4>
+                            }
+                            else
+                            {
+                                <h4 class="custom-text-orange">@originalPrice.Currency</h4>
+                            }
+                            <button class="btn btn-block custom-bg-orange text-white" @onclick="AddToCart">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 pl-2 pr-0">
+                    <div class="card border-0">
+                        <div class="card-header  bg-white">
+                            <div class="card-title">Features</div>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li>Weight: @Good.Weight kg</li>
+                                <li>Size: @Good.Size (cm)</li>
+                                <li>Model: @Good.Model</li>
+                                @foreach (var feature in Good.KeyFeatures)
+                                {
+                                    <li>@feature.Feature</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Good.Description?.Trim()))
+    {
+        <div class="card mb-3 border-0">
+            <div class="card-header bg-white">
+                <div class="card-title"><strong>Description</strong></div>
+            </div>
+            <div class="card-body">
+                <div class="text-prewrap">@Good?.Description</div>
+            </div>
+        </div>
+
+    }
+    @if (Good?.Feedback.Count > 0)
+    {
+        bool isVisible = false;
+
+        <div class="card mb-3 border-0">
+
+            <div class="card-header custom-bg-orange">
+                <div class="card-title text-white">Customer feedback</div>
+                @if (Good?.Feedback?.Count > 3)
+                {
+                    if (!isVisible)
+                    {
+                        <button class="btn-link float-right" @onclick="()=> { isVisible = true; }">See more</button>
+                    }
+                }
+            </div>
+            <div class="card-body">
+                @for (int i = 1; i <= 3; i++)
+                {
+                    if (Good?.Feedback?.Count > i)
+                    {
+                        var feedback = Good?.Feedback?.ToList()[i - 1];
+                        if (feedback != null)
+                        {
+                            <div class="card-title">@feedback.UserName</div>
+                            <div class="card-text">@feedback.DatePosted</div>
+                            <p class="card-text">@feedback.Message</p>
+                            <hr />
+                        }
+                    }
+                }
+
+                @if (isVisible)
+                {
+                    @for (int i = 3; i < Good?.Feedback?.Count; i++)
+                    {
+                        var feedback = Good?.Feedback?.ToList()[i];
+                        if (feedback != null)
+                        {
+                            <div class="card-title">@feedback.UserName</div>
+                            <div class="card-text">@feedback.DatePosted</div>
+                            <p class="card-text">@feedback.Message</p>
+                            <hr />
+                        }
+                    }
+                }
+            </div>
+            @if (isVisible)
+            {
+                <div class="card-footer">
+                    <button class="btn-link float-right" @onclick="()=> { isVisible = false; }">See more</button>
+                </div>
+            }
+        </div>
+    }
+
+    <AuthorizeView Roles="Admin">
+        <div class="col-12 p-2 rounded mb-3">
+            @if (Error == true)
+            {
+                <div class="alert alert-warning alert-dismissible">
+                    <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                    @Response
+                </div>
+            }
+            @if (Error == false)
+            {
+                <div class="alert alert-success alert-dismissible">
+                    <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+                    @Response
+                </div>
+            }
+
+            <div class="d-flex">
+                <button class="btn custom-bg-orange text-white flex-fill mr-2" data-toggle="modal" data-target="#documentsModal">Dcocuments</button>
+                <button class="btn btn-primary flex-fill ml-1 mr-2" @onclick="Approve">Approve</button>
+                <button class="btn btn-danger flex-fill ml-1" data-toggle="modal" data-target="#rejectModal">Reject</button>
+            </div>
+            <!-- Reject modal-->
+            <div class="modal fade" id="rejectModal" role="dialog">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Reject Good</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <Reject Good="@Good" Error="@null" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- End reject modal-->
+            <!-- Documents modal-->
+            <div class="modal fade" id="documentsModal" role="dialog">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Support Documents</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <Documents Good="@Good" Error="@null" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- End documents modal-->
+        </div>
+    </AuthorizeView>
+
+    @if (Goods != null)
+    {
+        <div class="card mb-3">
+            <div class="card-header custom-bg-orange">
+                <div class="card-title d-inline">
+                    <h3>
+                        <b>Related items</b>
+                        <small> <a class="float-right text-white custom-nav-link" href="goods/categories/subcategories/brands/@Good.BrandId">See more</a></small>
+                    </h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var good in Goods)
+                    {
+                        var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                        <div class="col-lg-2 col-sm-3 col-4 custom-hover-shadow rounded p-1">
+                            <div class="card border-0 h-100">
+                                <div class="card-body p-1">
+                                    <img src="@source" alt="Card image" class="mx-auto d-block custom-display-image rounded">
+                                    <div class="card-title">@good.Name</div>
+                                    <a href="goods/@good.Id/description" class="card-link stretched-link"></a>
+                                    @{ var originalPrice1 = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                    @if (Good.Discount > 0)
+                                    {
+                                        <div class="card-text">
+                                            <del>@originalPrice1.Currency</del> <span class="custom-bg-orange float-right">-@Good.Discount%</span>
+                                        </div>
+                                        var discount = (decimal)(100 - Good.Discount);
+                                        var price = discount / 100 * Good.Price;
+                                        var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                        <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="card-text"><strong>@originalPrice1.Currency</strong></div>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private string goodId;
+    private NotifyPropertyChanged Notify = new NotifyPropertyChanged();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Notify = new NotifyPropertyChanged(this);
+        Notify.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(Good_PropertyChanged);
+
+        await GetGood();
+    }
+
+    [Parameter]
+    public string GoodId { get => goodId; set { goodId = value; Notify.Property = "GoodId"; } }
+    public string Response { get; set; }
+    public bool? Error { get; set; }
+    private Good Good { get; set; }
+    private List<Good> Goods { get; set; }
+
+
+    private async Task GetGood()
+    {
+        try
+        {
+            Good = await _http.Client.GetFromJsonAsync<Good>($"api/Goods/good/{GoodId}");
+            var goods = await _http.Client.GetFromJsonAsync<List<Good>>($"api/Goods");
+            goods = goods.Where(x => x.Brand?.Id == Good?.Brand?.Id).ToList();
+            if (goods.Count > 12)
+            {
+                var random = new Random();
+                for (int i = 0; i < 12; i++)
+                {
+                    var next = random.Next(0, goods.Count - 1);
+                    Goods.Add(goods[next]);
+                }
+            }
+            else Goods = goods;
+        }
+        catch { }
+    }
+
+    private async Task AddToCart()
+    {
+        try
+        {
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            HttpResponseMessage result;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+
+                result = await _httpClient.PostAsJsonAsync<Good>($"api/cart/{userId}", Good);
+            }
+            else
+            {
+                result = await _http.Client.PostAsJsonAsync<Good>($"api/cart/{userId}", Good);
+            }
+
+            if (result.IsSuccessStatusCode)
+            {
+                var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+                await _localStorage.SetItemAsync("userId", cart.UserId);
+                StateContainer.SetCount(cart.ItemsCount);
+                StateContainer.SetPrice(cart.TotalPrice);
+            }
+        }
+        catch { }
+    }
+
+    private async Task Approve()
+    {
+        try
+        {
+            Error = null;
+            HttpResponseMessage result;
+            @if (Good.IsApprovedForSale == null)
+            {
+                result = await _httpClient.PutAsJsonAsync($"api/Goods/approve-rejected", Good);
+
+            }
+            else
+            {
+                Good.IsApprovedForSale = true;
+                result = await _httpClient.PutAsJsonAsync($"api/Goods", Good);
+            }
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async void Good_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        await GetGood();
+        StateHasChanged();
+    }
+
+}

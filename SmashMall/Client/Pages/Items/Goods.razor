@@ -1,0 +1,578 @@
+﻿@page "/goods"
+@page "/goods/{Item}"
+
+<h1 class="display-4">@AllGoods?.Count items found</h1>
+
+<div id="filtersNav" class="filters-nav bg-white d-md-none">
+    <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+    <div class="card border-0 shadow">
+        <div class="card-body p-2">
+            <div class="card-title"><strong>Price</strong></div>
+            @if (goods?.Count > 0 && MaxPrice == null) { MaxPrice = goods?.Max(x => x.Price); }
+            <div class="form-label-group">
+                <input type="number" @bind="MinPrice" min="0" id="minPrice" class="form-control" placeholder="Mininimum" />
+                <label for="minPrice">Mininimum</label>
+            </div>
+            @if (goods?.Count > 0 && MinPrice == null) { MinPrice = goods?.Min(x => x.Price); }
+            <div class="form-label-group">
+                <input type="number" @bind="MaxPrice" min="100" id="minPrice" class="form-control" placeholder="Maximum" />
+                <label for="minPrice">Maximum</label>
+            </div>
+            <button class="btn btn-block custom-bg-orange text-white" @onclick="ApplyFilters">APPLY</button>
+        </div>
+    </div>
+    @if (categories != null)
+    {
+        <div class="list-group bg-white mt-3">
+            <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Category: @CategoryName</strong></span>
+            @foreach (var c in categories)
+            {
+                <button type="button" class="list-group-item custom-nav-link p-1" @onclick="()=>{ CategoryName = c; }">@c</button>
+            }
+        </div>
+    }
+</div>
+
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <div class="card-title"><strong>Price</strong></div>
+                    @if (goods?.Count > 0 && MaxPrice == null) { MaxPrice = goods?.Max(x => x.Price); }
+                    <div class="form-label-group">
+                        <input type="number" value="@MinPrice" min="0" id="minPrice" class="form-control" placeholder="Mininimum" @onchange="(e)=> { MinPrice = Convert.ToDecimal(e.Value); }" />
+                        <label for="minPrice">Mininimum</label>
+                    </div>
+                    @if (goods?.Count > 0 && MinPrice == null) { MinPrice = goods?.Min(x => x.Price); }
+                    <div class="form-label-group">
+                        <input type="number" value="@MaxPrice" min="100" id="minPrice" class="form-control" placeholder="Maximum" @onchange="(e)=> { MaxPrice = Convert.ToDecimal(e.Value); }" />
+                        <label for="minPrice">Maximum</label>
+                    </div>
+                    <button class="btn btn-block custom-bg-orange text-white" @onclick="ApplyFilters">APPLY</button>
+                </div>
+            </div>
+            @if (categories != null || categories?.Count == 0)
+            {
+                <div class="list-group bg-white mt-3">
+                    <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Category: @CategoryName</strong></span>
+                    @foreach (var c in categories)
+                    {
+                        <button type="button" class="list-group-item custom-nav-link p-1" @onclick="()=>{ CategoryName = c; }">@c</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                <span class="card-title"><strong> SORT BY</strong> </span>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByPrice">PRICE @sortByPrice </button>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="ClearFilters">CLEAR FILTERS</button>
+
+                <button class="btn custom-bg-orange text-white float-right" disabled="@IsLoading" @onclick="GetGoods">
+                    Reload
+
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-reload"></span>
+                    }
+                </button>
+            </div>
+
+            <div class="card-body">
+                @if (AllGoods == null)
+                {
+                    <em>Loading...</em>
+                }
+                else if (AllGoods?.Count == 0)
+                {
+                    <div class="text-center">There are no goods available for display</div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var good in AllGoods)
+                        {
+                            <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                                <div class="card border-0 custom-hover-shadow h-100">
+                                    <div class="card-body p-1">
+                                        <a href="goods/@good.Id/description" class="custom-nav-link">
+                                            @{var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                                                <img src="@source" alt="@good.Name" class="mx-auto d-block custom-display-image rounded">
+                                            }
+                                            <div class="card-title">@good.Name</div>
+                                        </a>
+                                        @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                        @if (good.Discount > 0)
+                                        {
+                                            <div class="card-text">
+                                                <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                            </div>
+                                            var discount = (decimal)(100 - good.Discount);
+                                            var price = discount / 100 * good.Price;
+                                            var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                            <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                        }
+
+                                        <div class="card-text">
+                                            Save for later <input type="checkbox" checked="@good.IsSaved" @onchange="(e => SaveGood(good, e))" />
+                                        </div>
+                                        @if (good.UserDetails.Roles.Contains("Admin"))
+                                        {
+                                            <div class="card-text">
+                                                <em>Sold by: </em><span>SmashMall</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-text">
+                                                <em>Sold by: </em>@good.UserDetails.Name
+                                            </div>
+                                        }
+                                        @if (good.Quantity <= 1)
+                                        {
+                                            <div class="card-text">Out of stock</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-text">@good.Quantity in stock</div>
+                                        }
+                                    </div>
+                                    <div class="card-footer border-0 bg-white p-1">
+                                        @if (good.Quantity >= 1)
+                                        {
+                                            <button class="btn btn-block custom-bg-orange text-white" @onclick="() => AddToCart(good)">ADD TO CART</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@if (RandomGoods.Count > 0)
+{
+
+    <div class="card border-0 mt-3">
+        <div class="card-header custom-bg-orange p-3">
+            <div class="card-title text-white">
+                <h3>Items you may like</h3>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var good in RandomGoods)
+                {
+                    var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                    <div class="col-lg-2 col-sm-3 col-4 custom-hover-shadow rounded p-1">
+                        <div class="card border-0 h-100">
+                            <div class="card-body p-1">
+                                <img src="@source" alt="Card image" class="mx-auto d-block custom-display-image rounded">
+                                <div class="card-title">@good.Name</div>
+                                <a href="goods/@good.Id/description" class="card-link stretched-link"></a>
+                                @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                @if (good.Discount > 0)
+                                {
+                                    <div class="card-text">
+                                        <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                    </div>
+                                    var discount = (decimal)(100 - good.Discount);
+                                    var price = discount / 100 * good.Price;
+                                    var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                    <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                }
+                                else
+                                {
+                                    <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    private NotifyPropertyChanged Notify = new NotifyPropertyChanged();
+
+    private string item;
+    private string category;
+    private string subcategory;
+    private decimal? maxPrice;
+    private decimal? minPrice;
+    private string blackFriday;
+    private string brand;
+    private string seller;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateContainer.OnChange += StateHasChanged;
+        Notify.PropertyChanged += Goods_PropertyChanged;
+        await GetGoods();
+
+        StateHasChanged();
+    }
+
+    [Parameter]
+    public string Item
+    {
+        get
+        {
+            return item;
+        }
+        set
+        {
+            item = value;
+            Notify.Property = "Item";
+        }
+    }
+
+    [Parameter]
+    public decimal? MaxPrice
+    {
+        get => maxPrice;
+        set
+        {
+            maxPrice = value;
+            Notify.Property = "MaxPrice";
+        }
+    }
+
+    [Parameter]
+    public decimal? MinPrice
+    {
+        get => minPrice;
+        set
+        {
+            minPrice = value;
+            Notify.Property = "MinPrice";
+        }
+    }
+
+    [Parameter]
+    public string CategoryName
+    {
+        get => category;
+        set
+        {
+            category = value;
+            Notify.Property = "CategoryName";
+        }
+    }
+
+    [Parameter]
+    public string SubcategoryName
+    {
+        get => subcategory;
+        set
+        {
+            subcategory = value;
+            Notify.Property = "SubcategoryName";
+        }
+    }
+
+    [Parameter]
+    public string BrandName
+    {
+        get => brand;
+        set
+        {
+            brand = value;
+            Notify.Property = "BrandName";
+        }
+    }
+
+    [Parameter]
+    public string BlackFriday
+    {
+        get => blackFriday;
+        set
+        {
+            blackFriday = value;
+            Notify.Property = "BlackFriday";
+        }
+    }
+
+    [Parameter]
+    public string SellerId
+    {
+        get => seller;
+        set
+        {
+            seller = value;
+            Notify.Property = "SellerId";
+        }
+    }
+
+    private bool IsLoading { get; set; }
+    private bool Selected { get; set; }
+    private List<Good> AllGoods { get; set; }
+    private List<Good> goods = new List<Good>();
+    private List<Good> dbGoods = new List<Good>();
+    private List<Good> RandomGoods { get; set; } = new List<Good>();
+    private List<string> categories = new List<string>();
+    //private List<GoodBrand> brands = new List<GoodBrand>();
+    private string sortByPrice = "";
+    private string sortByName = "";
+
+
+    private async Task GetGoods()
+    {
+        IsLoading = true;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity.IsAuthenticated)
+                dbGoods = await _httpClient.GetFromJsonAsync<List<Good>>($"api/Goods");
+            else
+                dbGoods = await _http.Client.GetFromJsonAsync<List<Good>>($"api/Goods");
+
+
+            IsLoading = false;
+
+            if (string.IsNullOrEmpty(Item))
+            {
+                goods = dbGoods;
+            }
+            if (Navigation.Uri != $"{BaseApi.Url}category/{ CategoryName}")
+            {
+                categories = dbGoods.Select(x => x.Brand.Subcategory.GoodCategory.Name).ToList();
+            }
+
+            if (dbGoods.Count > 0)
+            {
+                MaxPrice = dbGoods?.Max(x => x.Price);
+                minPrice = dbGoods?.Min(x => x.Price);
+            }
+            // ApplyFilters();
+            if (dbGoods.Count > 12)
+            {
+                var random = new Random();
+                for (int i = 0; i < 12; i++)
+                {
+                    var next = random.Next(0, dbGoods.Count - 1);
+                    RandomGoods.Add(dbGoods[next]);
+                }
+            }
+            else RandomGoods = dbGoods;
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        AllGoods = new List<Good>();
+
+        if (!string.IsNullOrEmpty(Item))
+        {
+            var _goods = new List<Good>();
+            var itemNameGoods = dbGoods.Where(c => c.Name.Contains(Item, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (itemNameGoods != null) _goods.AddRange(itemNameGoods);
+
+            var categoryNameGoods = dbGoods.Where(c => c.Brand.Subcategory.GoodCategory.Name.Contains(Item, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (categoryNameGoods != null)
+                _goods.AddRange(categoryNameGoods);
+
+            var subcategoryNameGoods = dbGoods.Where(c => c.Brand.Subcategory.Name.Contains(Item, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (itemNameGoods != null)
+                _goods.AddRange(subcategoryNameGoods);
+
+            var brandNameGoods = dbGoods.Where(c => c.Brand.Name.Contains(Item, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (itemNameGoods != null)
+                _goods.AddRange(brandNameGoods);
+
+            goods = _goods.Distinct().ToList();
+            categories = new List<string>();
+            categories = goods.Select(x => x.Brand.Subcategory.GoodCategory.Name).ToList();
+
+            AllGoods = goods;
+        }
+        if (!string.IsNullOrEmpty(CategoryName?.Trim()))
+        {
+            var categoryNameGoods = goods.Where(c => c.Brand.Subcategory.GoodCategory.Name.Equals(CategoryName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (categoryNameGoods != null) AllGoods.AddRange(categoryNameGoods);
+            if (Navigation.Uri == $"{BaseApi.Url}category/{CategoryName}")
+            {
+                AllGoods = categoryNameGoods;
+                categories = categoryNameGoods.Select(x => x.Brand.Subcategory.GoodCategory.Name).ToList();
+            }
+        }
+        if (!string.IsNullOrEmpty(SubcategoryName?.Trim()))
+        {
+            var subcategoryNameGoods = goods.Where(c => c.Brand.Subcategory.Name.Contains(SubcategoryName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (subcategoryNameGoods != null) AllGoods.AddRange(subcategoryNameGoods);
+            if (Navigation.Uri == $"{BaseApi.Url}search/{Item}/{SubcategoryName}")
+            {
+                AllGoods = goods.Where(c => c.Brand.Subcategory.Name.Equals(SubcategoryName, StringComparison.OrdinalIgnoreCase)).Distinct().ToList();
+            }
+        }
+        if (!string.IsNullOrEmpty(BrandName?.Trim()))
+        {
+            var brandNameGoods = goods.Where(c => c.Brand.Name.Contains(BrandName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (brandNameGoods != null) AllGoods.AddRange(brandNameGoods);
+        }
+        if (!string.IsNullOrEmpty(BlackFriday?.Trim()))
+        {
+            var blackFridayGoods = goods.Where(c => c.Discount >= 20).ToList();
+            if (blackFridayGoods != null) AllGoods.AddRange(blackFridayGoods);
+        }
+        if (!string.IsNullOrEmpty(SellerId?.Trim()))
+        {
+            var sellerGoods = goods.Where(c => c.UserId == SellerId).ToList();
+            if (sellerGoods != null) AllGoods.AddRange(sellerGoods);
+            categories = sellerGoods.Select(x => x.Brand.Subcategory.GoodCategory.Name).ToList();
+        }
+
+        // this should be the last filter option
+        if (MaxPrice != null && MinPrice != null)
+        {
+            AllGoods = AllGoods.Where(c => c.Price >= MinPrice && c.Price <= MaxPrice).ToList();
+        }
+
+        if (Navigation.Uri == $"{BaseApi.Url}goods" && string.IsNullOrEmpty(CategoryName))
+        {
+            AllGoods = goods;
+        }
+
+        goods = goods.Distinct().ToList();
+        AllGoods = AllGoods.Distinct().ToList();
+        categories = categories.Distinct().ToList();
+    }
+
+    private void ClearFilters()
+    {
+        if (goods.Count > 0)
+        {
+            MaxPrice = goods?.Max(x => x.Price);
+            minPrice = goods?.Min(x => x.Price);
+        }
+        if (Navigation.Uri != $"category/{CategoryName}")
+        {
+            CategoryName = null;
+        }
+        SubcategoryName = null;
+        BrandName = null;
+        ApplyFilters();
+    }
+
+    private void SortByPrice()
+    {
+        if (sortByPrice == "" || sortByPrice == "H - L")
+        {
+            sortByPrice = "L - H";
+            AllGoods = AllGoods.OrderBy(x => x.Price).ToList();
+        }
+        else
+        {
+            sortByPrice = "H - L";
+            AllGoods = AllGoods.OrderByDescending(x => x.Price).ToList();
+        }
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            AllGoods = AllGoods.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            AllGoods = AllGoods.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+    private void Goods_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        ApplyFilters();
+    }
+
+    private async Task SaveGood(Good good, ChangeEventArgs e)
+    {
+        try
+        {
+            if (Convert.ToBoolean(e.Value) == true)
+            {
+                await _httpClient.PostAsJsonAsync($"api/Goods/saved", good);
+            }
+            else
+            {
+                await _httpClient.DeleteAsync($"api/Goods/saved/{good.Id}");
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task AddToCart(Good good)
+    {
+        try
+        {
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            HttpResponseMessage result;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+
+                result = await _httpClient.PostAsJsonAsync<Good>($"api/cart/{userId}", good);
+            }
+            else
+            {
+                result = await _http.Client.PostAsJsonAsync<Good>($"api/cart/{userId}", good);
+            }
+
+            if (result.IsSuccessStatusCode)
+            {
+                var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+                await _localStorage.SetItemAsync("userId", cart.UserId);
+                StateContainer.SetCount(cart.ItemsCount);
+                StateContainer.SetPrice(cart.TotalPrice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= StateHasChanged;
+    }
+}

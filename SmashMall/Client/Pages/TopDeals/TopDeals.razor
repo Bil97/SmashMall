@@ -1,0 +1,267 @@
+﻿@page "/deals/top"
+@attribute [Authorize]
+
+<h2>Top deals</h2>
+
+<EditForm Model="Deal" OnValidSubmit="Add" class="mb-3">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="card mx-auto" style="max-width:500px">
+        <div class="card-body">
+            <div class="custom-file">
+                <InputFile OnChange="OnInputFileChanged" />
+            </div>
+            <div class="form-label-group">
+                <InputText @bind-Value="@Deal.Name" class="form-control" />
+                <label>Deal name</label>
+            </div>
+            <div class="form-label-group">
+                <InputText @bind-Value="@Deal.PageUrl" class="form-control" />
+                <label>Page Url</label>
+            </div>
+
+            <button class="btn custom-bg-orange text-white btn-block" type="submit">Add</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+<div class="card border-0">
+    <div class="card-header bg-white">
+
+        <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetDeals">
+            Reload
+
+            @if (IsLoading)
+            {
+                <span class="spinner-border spinner-border-sm"></span>
+            }
+            else
+            {
+                <span class="oi oi-reload"></span>
+            }
+        </button>
+    </div>
+    <div class="card-body bg-white p-0">
+        @if (Deals == null)
+        {
+            <span class="spinner-border spinner-border-sm"></span>
+            <em>Loading...</em>
+        }
+        else if (Deals.Count == 0)
+        {
+            <div class="text-center">
+                Nothing to display
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var deal in Deals)
+                {
+                    <div class="col-lg-4 col-6 mb-4">
+                        <EditForm Model="deal" OnValidSubmit="() => Update(deal)">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    @{var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{deal.Image?.Name}";
+                                        <img src="@source" alt="@deal.Name" class="mx-auto d-block img-fluid m-2">
+                                    }
+                                    <InputFile OnChange="OnInputFileChanged" />
+                                    <div class="form-label-group">
+                                        <InputText @bind-Value="@deal.Name" class="form-control" />
+                                        <label>Deal name</label>
+                                    </div>
+                                    <div class="form-label-group">
+                                        <InputText @bind-Value="@deal.PageUrl" class="form-control" />
+                                        <label>Page Url</label>
+                                    </div>
+
+                                    <div class="card-footer border-0 bg-white p-2">
+                                        <a href="@deal.PageUrl" class="btn btn-block custom-bg-orange text-white text-center m-1">Visit Url</a>
+                                        <button class="btn btn-block custom-bg-orange text-white btn-block" type="submit">Update</button>
+                                        <button class="btn btn-block btn-danger btn-block" @onclick="() => Delete(deal)">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<TopDeal> Deals { get; set; }
+    public bool IsLoading { get; set; }
+    public bool? Error { get; set; }
+    public string Response { get; set; }
+    private TopDeal Deal { get; set; } = new TopDeal();
+    byte[] file = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetDeals();
+    }
+
+    private async Task GetDeals()
+    {
+        try
+        {
+            IsLoading = true;
+            Deals = await _httpClient.GetFromJsonAsync<List<TopDeal>>($"api/TopDeals");
+            IsLoading = false;
+        }
+        catch { }
+    }
+
+    private async Task Add()
+    {
+        if (file == null)
+        {
+            Error = true;
+            Response = "No file chosen";
+            return;
+        }
+
+        Error = null;
+        string fileName = "image.png";
+        var content = new MultipartFormDataContent { { new ByteArrayContent(file), "formFile", fileName } };
+        content.Add(new StringContent(Deal.Name), "name");
+        content.Add(new StringContent(Deal.PageUrl), "pageUrl");
+        try
+        {
+            var result = await _httpClient.PostAsync($"api/TopDeals", content);
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                Deal = new TopDeal();
+                await GetDeals();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+            file = null;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task Update(TopDeal deal)
+    {
+
+        Error = null;
+        string fileName = "image.png";
+        var content = new MultipartFormDataContent();
+        if (file != null)
+        {
+            content.Add(new ByteArrayContent(file), "formFile", fileName);
+        }
+        content.Add(new StringContent(deal.Name), "name");
+        content.Add(new StringContent(deal.PageUrl), "pageUrl");
+        content.Add(new StringContent(deal.ImageId.ToString()), "imageId");
+        content.Add(new StringContent(deal.Image.Name), "imagePath");
+        try
+        {
+            var result = await _httpClient.PutAsync($"api/TopDeals/{deal.Id}", content);
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                await GetDeals();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+            file = null;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task Delete(TopDeal deal)
+    {
+        try
+        {
+            var result = await _httpClient.DeleteAsync($"api/TopDeals/{deal.Id}");
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                await GetDeals();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        var imageFile = e.File;
+        var format = "image/png";
+
+        var resizedImageFile = await imageFile.RequestImageFileAsync(format, 200, 150);
+        file = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream().ReadAsync(file);
+    }
+
+}

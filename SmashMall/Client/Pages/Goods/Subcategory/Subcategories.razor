@@ -1,0 +1,332 @@
+﻿@page "/goods/categories/subcategories"
+@attribute [Authorize(Roles = "Admin, Manager")]
+
+<h2>All subcategories</h2>
+
+<EditForm Model="@_subcategory" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="d-flex flex-wrap">
+        <div class="row flex-fill m-1">
+            <InputText @bind-Value="_subcategory.Name" class="form-control col" placeholder="Subcategory name" />
+            @if (Categories != null)
+            {
+                <select @bind="_subcategory.GoodCategoryId" class="form-control col" placeholder="Select category">
+                    <option value="" selected disabled>Choose category</option>
+                    @foreach (var category in Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            }
+        </div>
+        <div class="row flex-fill m-1">
+            <InputFile OnChange="OnInputFileChange" class="form-control col-8" accept=".jpg, .jpeg, .png" />
+
+            <button type="submit" class="btn-sm custom-bg-orange text-white col-4" disabled="@Submitting">
+                Add
+                @if (Submitting)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                }
+            </button>
+        </div>
+    </div>
+</EditForm>
+<br />
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <GoodsNavMenu />
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+         <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <GoodsNavMenu />
+        </div>
+        @if (file != null)
+        {
+            <img src="@ImageDataUrl" class="img-thumbnail mx-auto d-block img-fluid m-2" />
+        }
+
+        @if (Error == true)
+        {
+            <div class="alert alert-warning col-md-6">
+                <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                @Response
+            </div>
+
+        }
+        else if (Error == false)
+        {
+            <div class="alert alert-success col-md-6">
+                <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                @Response
+            </div>
+        }
+
+            <div class="card border-0">
+                <div class="card-header bg-white">
+                    <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                    <span class="card-title"><strong> SORT BY</strong> </span>
+
+                    <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+                    <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByBrands">BRANDS @sortByBrands</button>
+
+                    <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetSubcategory">
+                        Reload
+
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-reload"></span>
+                        }
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (GoodSubcategories == null)
+                    {
+                        <div>
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <em>Loading...</em>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach (var subcategory in GoodSubcategories)
+                            {
+                                <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                                    <div class="card border-0 custom-hover-shadow h-100">
+                                        <div class="card-body p-1">
+                                            @{
+                                                var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{subcategory.Image.Name}";
+                                                <img src="@source" alt="@subcategory.Name" class="mx-auto d-block custom-display-image rounded" />
+                                            }
+                                            <div class="card-title"><strong>Name: </strong>@subcategory.Name</div>
+                                            <div class="card-text"><strong>Category: </strong>@subcategory.GoodCategory.Name</div>
+                                            <div class="card-text"><strong>Brands: </strong>@subcategory.Brands?.Count</div>
+                                        </div>
+                                        <div class="card-footer border-0 bg-white p-1 d-flex">
+                                            <button @onclick="() => ShowModal(subcategory)" class="btn-sm custom-bg-orange text-white m-1 flex-fill" data-toggle="modal" data-target="#editModal">Edit</button>
+                                            <button @onclick="() => ShowModal(subcategory)" class="btn-sm-sm btn-danger m-1 flex-fill" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            }
+                        </div>
+                        <!-- Edit category -->
+
+                        <div class="modal fade" id="editModal">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Edit subcategory</h4>
+                                        <button type="button" class="close" data-dismiss="modal" @onclick="CloseModal">&times;</button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        @{
+                                            var img = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{_subcategory.Image?.Name}";
+                                            <EditSubcategory Subcategory="@_subcategory" Categories="@Categories" Error="@null" ImageDataUrl="@img" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- End edit category -->
+                        <!-- Delete category -->
+
+                        <div class="modal fade" id="deleteModal">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Delete subcategory</h4>
+                                        <button type="button" class="close" data-dismiss="modal" @onclick="CloseModal">&times;</button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        <DeleteSubcategory Subcategory="@_subcategory" Error="@null"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- End delete category -->
+                    }
+                </div>
+            </div>
+    </div>
+</div>
+
+@code{
+    private List<GoodSubcategory> GoodSubcategories { get; set; }
+    private List<GoodCategory> Categories { get; set; }
+
+    private GoodSubcategory _subcategory = new GoodSubcategory();
+    private bool? Error { get; set; }
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+    private string ImageDataUrl { get; set; }
+    private string sortByName = "";
+    private string sortByBrands = "";
+    private bool IsLoading { get; set; }
+
+    byte[] file;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CloseModal();
+        await GetCategory();
+    }
+
+    private async Task GetSubcategory()
+    {
+        try
+        {
+            IsLoading = true;
+            GoodSubcategories = await _httpClient.GetFromJsonAsync<List<GoodSubcategory>>($"api/GoodsSubcategories");
+            IsLoading = false;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task GetCategory()
+    {
+        try
+        {
+            Categories = await _httpClient.GetFromJsonAsync<List<GoodCategory>>($"api/GoodsCategories");
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (file == null)
+        {
+            Error = true;
+            Response = "No file chosen";
+            return;
+        }
+
+        Submitting = true;
+        Error = null;
+        string fileName = "image.png";
+        var content = new MultipartFormDataContent { { new ByteArrayContent(file), "formFile", fileName } };
+        content.Add(new StringContent(_subcategory.Name), "name");
+        content.Add(new StringContent(_subcategory.GoodCategoryId.ToString()), "categoryId");
+        try
+        {
+            var result = await _httpClient.PostAsync($"api/GoodsSubcategories", content);
+
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                file = null;
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                await GetSubcategory();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var imageFile = e.File;
+        var format = "image/png";
+
+        var resizedImageFile = await imageFile.RequestImageFileAsync(format, 200, 150);
+        file = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream().ReadAsync(file);
+
+        ImageDataUrl = $"data:{format};base64,{Convert.ToBase64String(file)}";
+    }
+
+    private void ShowModal(GoodSubcategory subcategory)
+    {
+        _subcategory = subcategory;
+    }
+
+    private async Task CloseModal()
+    {
+        ImageDataUrl = null;
+        Error = null;
+        Response = null;
+        _subcategory = new GoodSubcategory();
+        await GetSubcategory();
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            GoodSubcategories=GoodSubcategories.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            GoodSubcategories=GoodSubcategories.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+    private void SortByBrands()
+    {
+        if (sortByBrands == "" || sortByBrands == "H - L")
+        {
+            sortByBrands = "L - H";
+            GoodSubcategories=GoodSubcategories.OrderBy(x => x.Brands.Count).ToList();
+        }
+        else
+        {
+            sortByBrands = "H - L";
+            GoodSubcategories=GoodSubcategories.OrderByDescending(x => x.Brands.Count).ToList();
+        }
+    }
+}

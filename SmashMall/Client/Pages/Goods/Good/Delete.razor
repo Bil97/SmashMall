@@ -1,0 +1,59 @@
+﻿<div class="input-group mb-3">
+    <input @bind="Good.Name" class="form-control" placeholder="Good name" disabled />
+    <div class="input-group-append">
+        <button @onclick="@DeleteGood" class="input-group-text btn btn-danger">Delete</button>
+    </div>
+</div>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code{
+    [Parameter]
+    public Good Good { get; set; }
+    [Parameter]
+    public bool? Error { get; set; }
+    public string Response { get; set; }
+
+    private async Task DeleteGood()
+    {
+        try
+        {
+            if (Good.IsApprovedForSale == null)
+                await _httpClient.DeleteAsync($"api/Goods/reject/{Good.Id}");
+
+            var postResult = await _httpClient.DeleteAsync($"api/Goods/{Good.Id}");
+            Response = await postResult.Content.ReadAsStringAsync();
+            if (postResult.IsSuccessStatusCode)
+            {
+                Error = false;
+            }
+            else
+            {
+                Error = true;
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

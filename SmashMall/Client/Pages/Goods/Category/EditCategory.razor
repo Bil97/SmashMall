@@ -1,0 +1,70 @@
+﻿<EditForm Model="@Category" OnValidSubmit="@UpdateCategory">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-label-group">
+        <InputText @bind-Value="Category.Name" class="form-control mb-1" placeholder="Category name" disabled="@DisableEdit" />
+        <label>Category name</label>
+    </div>
+    <div class="form-label-group">
+        <InputTextArea @bind-Value="Category.Details" class="form-control mb-1" placeholder="Category details" disabled="@DisableEdit" />
+        <label>Category details</label>
+    </div>
+    <button type="submit" class="btn custom-bg-orange mb-2" hidden="@DisableEdit">Update</button>
+</EditForm>
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code{
+    [Parameter]
+    public GoodCategory Category { get; set; }
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public bool DisableEdit { get; set; }
+    public bool Submitting { get; set; }
+    public string Response { get; set; }
+
+    private async Task UpdateCategory()
+    {
+        Error = null;
+        try
+        {
+            Submitting = true;
+            var content = System.Text.Json.JsonSerializer.Serialize(Category);
+            var bodyContent = new StringContent(content, System.Text.Encoding.UTF8, "application/json");
+            var postResult = await _httpClient.PutAsync($"api/GoodsCategories/{Category.Id}", bodyContent);
+            Submitting = false;
+            Response = await postResult.Content.ReadAsStringAsync();
+            if (postResult.IsSuccessStatusCode)
+            {
+                Error = false;
+            }
+            else
+            {
+                Error = true;
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

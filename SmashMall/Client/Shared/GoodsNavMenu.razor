@@ -1,0 +1,55 @@
+﻿<ul class="nav flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods">
+            <span>All goods</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods/my-goods">
+            <span>My goods</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="orders/my-orders">
+            <span>My orders</span>
+        </NavLink>
+    </li>
+    <AuthorizeView Roles="Admin,Manager">
+        <li class="nav-item">
+            <NavLink class="nav-link" href="goods/categories" Match="NavLinkMatch.All">
+                <span>Categories</span>
+            </NavLink>
+        </li>
+        <li class="nav-item">
+            <NavLink class="nav-link" href="goods/categories/subcategories">
+                <span>Subcategories</span>
+            </NavLink>
+        </li>
+        <li class="nav-item">
+            <NavLink class="nav-link" href="goods/categories/subcategories/brands">
+                <span>Brands</span>
+            </NavLink>
+        </li>
+        <li class="nav-item">
+            <NavLink class="nav-link" href="deals/top">
+                <span>Top deals</span>
+            </NavLink>
+        </li>
+    </AuthorizeView>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods/pending-approval">
+            <span>Goods approval</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods/rejected">
+            <span>Goods rejected</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="items/my-items">
+            <span>My items</span>
+        </NavLink>
+    </li>
+
+</ul>

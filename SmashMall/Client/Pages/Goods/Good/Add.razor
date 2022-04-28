@@ -1,0 +1,163 @@
+﻿<EditForm Model="@Good" OnValidSubmit="@HandleValidSubmit" class="mb-2">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-label-group">
+        <InputText @bind-Value="Good.Code" class="form-control mb-1" placeholder="Item Code" />
+        <label>Item code</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputText @bind-Value="Good.Name" class="form-control mb-1" placeholder="Item name" />
+        <label>Item name</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="Good.Price" class="form-control mb-1" placeholder="Item price" />
+        <label>Item price (Ksh)</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="Good.Discount" class="form-control mb-1" placeholder="Item discount" />
+        <label>Discount (0 - 100)</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="Good.Quantity" class="form-control mb-1" placeholder="Item Quantity" />
+        <label>Item quantity</label>
+    </div>
+    <div class="form-label-group">
+        <InputNumber @bind-Value="Good.Weight" class="form-control mb-1" placeholder="Item weight" />
+        <label>Item weight</label>
+    </div>
+    <div class="form-label-group">
+        <InputText @bind-Value="Good.Size" class="form-control mb-1" placeholder="Item size" />
+        <label>Item Size (L x W x H), cm</label>
+    </div>
+    <div class="form-label-group">
+        <InputText @bind-Value="Good.Model" class="form-control mb-1" placeholder="Item model" />
+        <label>Item model</label>
+    </div>
+
+    <div class="form-group">
+        @if (Subcategories != null)
+        {
+            <label>Subcategory</label>
+            <select class="form-control mb-1" @onchange="OnSelectionChanged">
+                <option selected disabled>Choose Subcategory</option>
+                @foreach (var subcategory in Subcategories)
+                {
+                    <option value="@subcategory.Id">@subcategory.Name</option>
+                }
+            </select>
+        }
+    </div>
+    <div class="form-group">
+        @if (Brands != null)
+        {
+            <label>Brand</label>
+            <InputSelect @bind-Value="@Good.BrandId" class="form-control mb-1">
+                <option selected disabled>Choose brand</option>
+                @foreach (var brand in Brands)
+                    {
+                    <option value="@brand.Id">@brand.Name</option>
+                    }
+            </InputSelect>
+        }
+    </div>
+    <button type="submit" class="btn btn-block custom-bg-orange text-white" disabled="@Submitting">
+        Add
+        @if (Submitting)
+        {
+            <span class="spinner-border spinner-border-sm"></span>
+        }
+    </button>
+</EditForm>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public Good Good { get; set; }
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+    private List<GoodBrand> Brands { get; set; }
+    private List<GoodSubcategory> Subcategories { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSubcategories();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Error = null;
+        try
+        {
+            Submitting = true;
+            var result = await _httpClient.PostAsJsonAsync($"api/Goods", Good);
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+    private async Task GetSubcategories()
+    {
+        try
+        {
+            Subcategories = await _httpClient.GetFromJsonAsync<List<GoodSubcategory>>($"api/GoodsSubcategories");
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        var id = e.Value.ToString();
+
+        Brands = Subcategories.FirstOrDefault(x => x.Id.ToString() == id).Brands.ToList();
+    }
+}

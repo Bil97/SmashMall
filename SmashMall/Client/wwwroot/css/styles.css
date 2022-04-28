@@ -1,0 +1,107 @@
+﻿.scroll-horizontal {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.scroll-vertical {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.text-prewrap{
+    white-space:pre-wrap;
+}
+
+.custom-bg {
+    background-color: #e9ecef;
+}
+
+.custom-hover-shadow:hover {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.custom-bg-orange {
+    background-color: orange;
+}
+
+.custom-text-orange {
+    color: orange;
+}
+
+.custom-nav-link {
+    color: black;
+    display: block;
+    padding: 0.5rem;
+}
+
+    .custom-nav-link:hover {
+        color: orange;
+        text-decoration: none;
+    }
+
+.carousel-inner img {
+    width: 100%;
+    height: 100%;
+    max-height: fit-content;
+    max-width: fit-content;
+}
+
+.custom-display-image {
+    max-height: fit-content;
+    max-width: 100%;
+}
+
+.filters-nav {
+    height: 60%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #e9ecef;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    margin-top: 150px;
+}
+
+    .filters-nav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        display: block;
+        transition: 0.3s;
+    }
+
+        .filters-nav a:hover {
+            color: orange;
+        }
+
+    .filters-nav .closebtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+    }
+
+
+#custCarousel .carousel-indicators {
+    position: static;
+    margin-top: 20px
+}
+
+    #custCarousel .carousel-indicators > li {
+        width: 100px
+    }
+
+    #custCarousel .carousel-indicators li img {
+        display: block;
+        opacity: 0.5
+    }
+
+    #custCarousel .carousel-indicators li.active img {
+        opacity: 1;
+        border-color: orange;
+    }
+
+    #custCarousel .carousel-indicators li:hover img {
+        opacity: 0.75
+    }

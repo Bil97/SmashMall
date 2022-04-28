@@ -1,0 +1,56 @@
+﻿<div class="input-group mb-3">
+    <input @bind="Town.Name" class="form-control" placeholder="Town name" disabled />
+    <div class="input-group-append">
+        <button @onclick="@Delete" class="input-group-text btn btn-danger">Delete</button>
+    </div>
+</div>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code{
+    [Parameter]
+    public Town Town { get; set; }
+    [Parameter]
+    public bool? Error { get; set; }
+    public string Response { get; set; }
+
+    private async Task Delete()
+    {
+        try
+        {
+            var postResult = await _httpClient.DeleteAsync($"api/pickup/towns/{Town.Id}");
+            Response = await postResult.Content.ReadAsStringAsync();
+            if (postResult.IsSuccessStatusCode)
+            {
+                Error = false;
+            }
+            else
+            {
+                Error = true;
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

@@ -1,0 +1,119 @@
+﻿<EditForm Model="@Brand" OnValidSubmit="@UpdateBrand">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <img src="@ImageDataUrl" class="img-thumbnail mx-auto d-block img-fluid m-2" />
+    <div class="d-flex flex-wrap">
+
+        <div class="row flex-fill m-1">
+            <div class="form-label-group">
+                <InputText @bind-Value="Brand.Name" class="form-control col" placeholder="Brand name" />
+                <label>Brand name</label>
+            </div>
+            <select @bind="Brand.SubcategoryId" class="form-control col" placeholder="Select subcategory">
+                <option value="" selected disabled>Choose subcategory</option>
+                @foreach (var subcategory in Subcategories)
+                {
+                    <option value="@subcategory.Id">@subcategory.Name</option>
+                }
+            </select>
+        </div>
+        <div class="row flex-fill m-1">
+            <InputFile OnChange="OnInputFileChange" class="form-control col-8 mb-1" accept=".jpg, .jpeg, .png" />
+
+            <button type="submit" class="btn custom-bg-orange text-white col-4 btn-primary" disabled="@Submitting">
+                Save
+                @if (Submitting == true)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                }
+            </button>
+        </div>
+    </div>
+</EditForm>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code{
+    [Parameter]
+    public GoodBrand Brand { get; set; }
+    [Parameter]
+    public List<GoodSubcategory> Subcategories { get; set; }
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public string ImageDataUrl { get; set; }
+    private bool? Submitting { get; set; }
+    private string Response { get; set; }
+
+    byte[] file;
+
+    private async Task UpdateBrand()
+    {
+        Submitting = true;
+        Error = null;
+
+        MultipartFormDataContent content = new MultipartFormDataContent();
+
+        if (file != null)
+        {
+            string fileName = "image.png";
+            content.Add(new ByteArrayContent(file), "Image", fileName);
+        }
+        content.Add(new StringContent(Brand.Name), "name");
+        content.Add(new StringContent(Brand.SubcategoryId.ToString()), "subcategoryId");
+        content.Add(new StringContent(Brand.ImageId.ToString()), "imageId");
+        content.Add(new StringContent(Brand.Image.Name), "imagePath");
+
+        try
+        {
+            var result = await _httpClient.PutAsync($"api/GoodsBrands/{Brand.Id}", content);
+
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                file = null;
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var imageFile = e.File;
+        var format = "image/png";
+
+        var resizedImageFile = await imageFile.RequestImageFileAsync(format, 200, 150);
+        file = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream().ReadAsync(file);
+
+        ImageDataUrl = $"data:{format};base64,{Convert.ToBase64String(file)}";
+    }
+
+}

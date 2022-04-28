@@ -1,0 +1,260 @@
+﻿@page "/goods/categories"
+@attribute [Authorize(Roles = "Admin,Manager")]
+
+<h2>All categories</h2>
+
+<EditForm Model="@_category" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText @bind-Value="_category.Name" class="form-control mb-1" placeholder="Category name" />
+    <InputTextArea @bind-Value="_category.Details" class="form-control mb-1" placeholder="Category details" />
+    <button type="submit" class="btn-sm custom-bg-orange text-white w-25 mx-auto">Add</button>
+</EditForm>
+
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <GoodsNavMenu />
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+
+        <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <GoodsNavMenu />
+        </div>
+
+        @if (Error == true)
+        {
+            <div class="alert alert-warning alert-dismissible">
+                <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                @Response
+            </div>
+
+        }
+        else if (Error == false)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                @Response
+            </div>
+        }
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                <span class="card-title"><strong> SORT BY</strong> </span>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortBySubcategories">Subcategories @sortBySubcategories</button>
+
+                <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetAllCategories">
+                    Reload
+
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-reload"></span>
+                    }
+                </button>
+            </div>
+            <div class="card-body">
+                @if (GoodsCategories == null)
+                {
+                    <span class="spinner-border"></span>
+                    <em>Loading...</em>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var category in GoodsCategories)
+                        {
+                            <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                                <div class="card border-0 custom-hover-shadow h-100">
+                                    <div class="card-body p-1">
+                                        <div class="card-title">Name: <span class="card-text">@category.Name</span></div>
+                                        <div class="card-title">Subcategories: <span class="card-text">@category.Subcategories?.Count</span></div>
+                                        <div class="card-title">Details: </div>
+                                        <p class="card-text">@category.Details</p>
+                                    </div>
+                                    <div class="card-footer bg-white border-0 p-1 d-flex">
+                                        <button @onclick="()=>ShowModal(category)" class="btn-sm custom-bg-orange text-white flex-fill m-1" data-toggle="modal" data-target="#editCategory">Details</button>
+                                        <button @onclick="()=>ShowModal(category)" class="btn-sm btn-danger flex-fill m-1" data-toggle="modal" data-target="#deleteCategory">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <!-- Edit category -->
+
+                    <div class="modal fade" id="editCategory">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Category details</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <EditCategory Category="@_category" Error="@null" DisableEdit="@DisableEdit" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End edit category -->
+                    <!-- Delete category -->
+
+                    <div class="modal fade" id="deleteCategory">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Delete category</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <DeleteCategory Category="@_category" />
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- End delete category -->
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    private List<GoodCategory> GoodsCategories { get; set; }
+    private GoodCategory _category = new GoodCategory();
+    private bool? Error { get; set; }
+    private bool DisableEdit { get; set; }
+    private string Response { get; set; }
+    private string sortByName = "";
+    private string sortBySubcategories = "";
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        DisableEdit = true;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.IsInRole("Admin"))
+        {
+            DisableEdit = false;
+        }
+        await CloseModal();
+    }
+
+    private async Task GetAllCategories()
+    {
+        try
+        {
+            IsLoading = true;
+            GoodsCategories = await _httpClient.GetFromJsonAsync<List<GoodCategory>>($"api/GoodsCategories");
+            IsLoading = false;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            Console.WriteLine(ex.Message);
+
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Error = null;
+        Response = null;
+        try
+        {
+            var content = System.Text.Json.JsonSerializer.Serialize(_category);
+            var bodyContent = new StringContent(content, System.Text.Encoding.UTF8, "application/json");
+            var postResult = await _httpClient.PostAsync($"api/GoodsCategories", bodyContent);
+            if (postResult.IsSuccessStatusCode)
+            {
+                Error = false;
+                await GetAllCategories();
+                Response = await postResult.Content.ReadAsStringAsync();
+                _category = new GoodCategory();
+            }
+            else
+            {
+                Error = true;
+                Response = await postResult.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void ShowModal(GoodCategory category)
+    {
+        _category = category;
+    }
+
+    private async Task CloseModal()
+    {
+        Error = null;
+        Response = null;
+        _category = new GoodCategory();
+        await GetAllCategories();
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            GoodsCategories = GoodsCategories.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            GoodsCategories = GoodsCategories.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+    private void SortBySubcategories()
+    {
+        if (sortBySubcategories == "" || sortBySubcategories == "H - L")
+        {
+            sortBySubcategories = "L - H";
+            GoodsCategories = GoodsCategories.OrderBy(x => x.Subcategories.Count).ToList();
+        }
+        else
+        {
+            sortBySubcategories = "H - L";
+            GoodsCategories = GoodsCategories.OrderByDescending(x => x.Subcategories.Count).ToList();
+        }
+    }
+
+}

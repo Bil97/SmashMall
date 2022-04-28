@@ -1,0 +1,153 @@
+﻿@page "/orders/{UserOrderId}"
+@attribute [Authorize]
+
+
+<h2>Order Id: @UserOrderId</h2>
+<h4>
+    Pickup station: @GoodOrders?.FirstOrDefault().PickupStation?.Name, @GoodOrders?.FirstOrDefault().PickupStation?.Description
+    @if (GoodOrders?.FirstOrDefault()?.LocalDelivery == true)
+    {
+        <span>(Delivery to home or office)</span>
+    }
+</h4>
+
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <OrdersNavMenu />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+
+        <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <OrdersNavMenu />
+        </div>
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                <span class="card-title"><strong> SORT BY</strong> </span>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByPrice">PRICE @sortByPrice</button>
+
+                <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetOrders">
+                    Reload
+
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-reload"></span>
+                    }
+                </button>
+            </div>
+            <div class="card-body p-1">
+                @if (GoodOrders == null)
+                {
+                    <em>Loading</em>
+                }
+                else if (GoodOrders?.Count == 0)
+                {
+                    <div class="text-center">No orders available</div>
+                }
+                else
+                {
+                    @foreach (var good in GoodOrders)
+                    {
+                        <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                            <div class="card border-0 custom-hover-shadow h-100">
+                                <div class="card-body p-1">
+                                    <a href="goods/@good.Id/description" class="custom-nav-link">
+                                        @{var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Good.Images?.FirstOrDefault()?.Name}";
+                                            <img src="@source" alt="@good.Good?.Name" class="mx-auto d-block custom-display-image rounded">
+                                        }
+                                        <div class="card-title">@good.Good?.Name</div>
+                                    </a>
+
+                                    <div class="card-text">Quantity: @good.Quantity</div>
+
+                                    @{ var currency = new CurrencyConverter(good.TotalPrice, BaseApi.Culture);
+                                        <div class="card-text"><strong>@currency.Currency</strong></div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string UserOrderId { get; set; }
+
+    private bool IsLoading { get; set; }
+    private List<GoodOrder> GoodOrders { get; set; }
+    private string sortByName = "";
+    private string sortByPrice = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetOrders();
+    }
+
+    private async Task GetOrders()
+    {
+        try
+        {
+            IsLoading = true;
+            GoodOrders = await _httpClient.GetFromJsonAsync<List<GoodOrder>>($"api/orders/{UserOrderId}");
+            IsLoading = false;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            GoodOrders = GoodOrders.OrderBy(x => x.Good.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            GoodOrders = GoodOrders.OrderByDescending(x => x.Good.Name).ToList();
+        }
+    }
+
+    private void SortByPrice()
+    {
+        if (sortByPrice == "" || sortByPrice == "H - L")
+        {
+            sortByPrice = "L - H";
+            GoodOrders = GoodOrders.OrderBy(x => x.Good.Price).ToList();
+        }
+        else
+        {
+            sortByPrice = "H - L";
+            GoodOrders = GoodOrders.OrderByDescending(x => x.Good.Price).ToList();
+        }
+    }
+
+}
+

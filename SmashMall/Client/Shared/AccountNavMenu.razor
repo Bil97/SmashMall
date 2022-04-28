@@ -1,0 +1,44 @@
+﻿<ul class="nav flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="items/my-items">
+            <span>My Items</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="items/saved-items">
+            <span>Saved Items</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods/my-goods">
+            <span>My goods</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="orders/my-orders">
+            <span>My orders</span>
+        </NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="goods/pending-approval">
+            <span>Goods approval</span>
+        </NavLink>
+    </li>
+    <AuthorizeView Roles="Admin,Manager">
+        <li class="nav-item">
+            <NavLink class="nav-link" href="pickup">
+                <span>Pickup</span>
+            </NavLink>
+        </li>
+        <li class="nav-item">
+            <NavLink class="nav-link" href="towns">
+                <span>Towns</span>
+            </NavLink>
+        </li>
+        <li class="nav-item">
+            <NavLink class="nav-link" href="deals/top">
+                <span>Top deals</span>
+            </NavLink>
+        </li>
+    </AuthorizeView>
+</ul>

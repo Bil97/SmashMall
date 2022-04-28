@@ -1,0 +1,219 @@
+﻿@page "/"
+
+<div class="card border-0 mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="d-none d-md-block" style="min-width: 25%;">
+                    <div class="list-group">
+                        <span class="list-group-item custom-bg-orange text-white text-center p-1"><strong>Categories</strong></span>
+
+                        @if (GoodCategories != null)
+                        {
+                            @foreach (var category in GoodCategories)
+                            {
+                                var link = $"category/{category.Name}";
+                                <NavLink class="list-group-item custom-nav-link p-1" href="@link">
+                                    @category.Name
+                                </NavLink>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="flex-grow-1 ml-3 rounded">
+                    @if (TopDeals != null && TopDeals?.Count > 0)
+                    {
+                        <div id="offers" class="carousel slide" data-ride="carousel" data-interval="20000"
+                             data-pause="hover">
+                            <ul class="carousel-indicators">
+                                <li data-target="#offers" data-slide-to="0" class="active"></li>
+                                @for (int i = 1; i < TopDeals.Count; i++)
+                                {
+                                    <li data-target="#offers" data-slide-to="@i"></li>
+                                }
+                            </ul>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    @{
+                                        var firstDeal = TopDeals[0];
+                                        var firstSource = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{firstDeal?.Image.Name}";
+                                    }
+                                    <img class="d-block mx-auto" src="@firstSource" alt="Los Angeles">
+                                    <div class="carousel-caption">
+                                        <h3>@firstDeal.Name</h3>
+                                        <a href="@firstDeal.PageUrl" class="btn custom-bg-orange text-white">SHOP NOW</a>
+                                    </div>
+                                </div>
+                                @for (int i = 1; i < TopDeals.Count; i++)
+                                {
+                                    var deal = TopDeals[i];
+                                    var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{deal?.Image.Name}";
+                                    <div class="carousel-item">
+                                        <img class="d-block mx-auto" src="@source" alt="@deal.Name">
+                                        <div class="carousel-caption">
+                                            <h3>@deal.Name</h3>
+                                            <a href="@deal.PageUrl" class="btn custom-bg-orange text-white">SHOP NOW</a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <a class="carousel-control-prev" href="#offers" data-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </a>
+                            <a class="carousel-control-next" href="#offers" data-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (NewArrivals != null)
+{
+    <div class="card border-0 mb-3">
+        <div class="card-header bg-white p-2">
+            <div class="card-title">
+                <h3>New Arrivals</h3>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var good in NewArrivals)
+                {
+                    var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                    <div class="col-lg-2 col-sm-3 col-4 custom-hover-shadow rounded p-1">
+                        <div class="card border-0 h-100">
+                            <div class="card-body p-1">
+                                <img src="@source" alt="Card image" class="mx-auto d-block custom-display-image rounded">
+                                <div class="card-title">@good.Name</div>
+                                <a href="goods/@good.Id/description" class="card-link stretched-link"></a>
+                                @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                @if (good.Discount > 0)
+                                {
+                                    <div class="card-text">
+                                        <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                    </div>
+                                    var discount = (decimal)(100 - good.Discount);
+                                    var price = discount / 100 * good.Price;
+                                    var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                    <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                }
+                                else
+                                {
+                                    <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (RandomGoods.Count > 0)
+{
+
+    <div class="card border-0 mb-3">
+        <div class="card-header custom-bg-orange p-2">
+            <div class="card-title text-white">
+                <h3>Items you may like</h3>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var good in RandomGoods)
+                {
+                    var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                    <div class="col-lg-2 col-sm-3 col-4 custom-hover-shadow rounded p-1">
+                        <div class="card border-0 h-100">
+                            <div class="card-body p-1">
+                                <img src="@source" alt="Card image" class="mx-auto d-block custom-display-image rounded">
+                                <div class="card-title">@good.Name</div>
+                                <a href="goods/@good.Id/description" class="card-link stretched-link"></a>
+                                @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                @if (good.Discount > 0)
+                                {
+                                    <div class="card-text">
+                                        <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                    </div>
+                                    var discount = (decimal)(100 - good.Discount);
+                                    var price = discount / 100 * good.Price;
+                                    var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                    <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                }
+                                else
+                                {
+                                    <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code{
+    private List<GoodCategory> GoodCategories { get; set; }
+    private List<TopDeal> TopDeals { get; set; }
+    private List<Good> NewArrivals { get; set; }
+    private List<Good> RandomGoods { get; set; } = new List<Good>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetTopDeals();
+        await GetGoodCategories();
+        await GetGoods();
+    }
+    private async Task GetTopDeals()
+    {
+        try
+        {
+            TopDeals = await _http.Client.GetFromJsonAsync<List<TopDeal>>($"api/TopDeals");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private async Task GetGoodCategories()
+    {
+        try
+        {
+            GoodCategories = await _http.Client.GetFromJsonAsync<List<GoodCategory>>("api/GoodsCategories/category-goods");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private async Task GetGoods()
+    {
+        try
+        {
+            var goods = await _http.Client.GetFromJsonAsync<List<Good>>($"api/Goods");
+            NewArrivals = goods.OrderBy(x => x.DateCreated).TakeLast(12).ToList();
+            if (goods.Count > 12)
+            {
+                var random = new Random();
+                for (int i = 0; i < 12; i++)
+                {
+                    var next = random.Next(0, goods.Count - 1);
+                    RandomGoods.Add(goods[next]);
+                }
+            }
+            else RandomGoods = goods;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

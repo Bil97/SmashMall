@@ -1,0 +1,33 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.JSInterop
+@using SmashMall.Client
+@using SmashMall.Client.Shared
+
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SmashMall.Client.Pages.Goods
+@using SmashMall.Client.Services
+@using SmashMall.Shared.Models.Files
+@using SmashMall.Shared.Models.Goods
+@using SmashMall.Shared.Models.Items
+@using SmashMall.Shared.Models.Orders
+@using SmashMall.Shared.Models.Pickup
+@using SmashMall.Shared.Models.UserAccount
+@using SmashMall.Shared.Services
+@using Blazored.LocalStorage
+
+
+@inject NavigationManager Navigation
+@inject HttpClient _httpClient
+@inject UnAuthorizedHttpClient _http
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject StateContainer StateContainer
+@inject ILocalStorageService _localStorage

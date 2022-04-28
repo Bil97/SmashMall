@@ -1,0 +1,318 @@
+﻿@page "/goods/pending-approval"
+@attribute [Authorize]
+
+<h2>Goods awaiting approval</h2>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <GoodsNavMenu />
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+        <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <GoodsNavMenu />
+        </div>
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+                <span class="card-title"><strong> SORT BY</strong> </span>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+
+                <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByPrice">PRICE @sortByPrice </button>
+
+                <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetGoods">
+                    Reload
+
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-reload"></span>
+                    }
+                </button>
+            </div>
+
+            <div class="card-body">
+                @if (Goods == null)
+                {
+                    <em>Loading</em>
+                }
+                else if (Goods?.Count == 0)
+                {
+                    <div class="text-center">No goods available</div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var good in Goods)
+                        {
+                            <div class="col-lg-2 col-sm-3 col-4 rounded p-1">
+                                <div class="card border-0 custom-hover-shadow h-100">
+                                    <div class="card-body p-1">
+                                        <a href="goods/@good.Id/description" class="custom-nav-link">
+                                            @{var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{good.Images?.FirstOrDefault()?.Name}";
+                                                <img src="@source" alt="@good.Name" class="mx-auto d-block custom-display-image rounded">
+                                            }
+                                            <div class="card-title">@good.Name</div>
+                                        </a>
+                                        @{ var originalPrice = new CurrencyConverter(good.Price, BaseApi.Culture);}
+                                        @if (good.Discount > 0)
+                                        {
+                                            <div class="card-text">
+                                                <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@good.Discount%</span>
+                                            </div>
+                                            var discount = (decimal)(100 - good.Discount);
+                                            var price = discount / 100 * good.Price;
+                                            var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                            <div class="card-text"><strong>@priceWithDiscount.Currency</strong></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-text"><strong>@originalPrice.Currency</strong></div>
+                                        }
+                                        <div class="card-text">@good.Quantity in stock</div>
+                                    </div>
+                                    <AuthorizeView>
+                                        @if (context.User.IsInRole("Admin"))
+                                        {
+                                            <div class="d-flex">
+                                                <button class="btn custom-bg-orange text-white flex-fill mr-1" @onclick="() => Approve(good)">Approve</button>
+                                                <button class="btn btn-danger flex-fill ml-1" data-toggle="modal" data-target="#rejectModal" @onclick="()=>ShowModal(good)">Reject</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card-footer border-0  bg-white p-1">
+                                                <div class=" d-flex flex-wrap">
+                                                    <button class="btn custom-bg-orange text-white flex-fill m-1" data-toggle="modal" data-target="#detailsModal" @onclick="()=>ShowModal(good)">Details</button>
+                                                    <button class="btn custom-bg-orange text-white flex-fill m-1" data-toggle="modal" data-target="#imagesModal" @onclick="()=>ShowModal(good)">Images</button>
+                                                </div>
+                                                <div class=" d-flex flex-wrap">
+                                                    <a href="goods/@good.Id/details" class="btn custom-bg-orange text-white text-center flex-fill m-1">Description</a>
+                                                    <button class="btn btn-danger flex-fill m-1" data-toggle="modal" data-target="#deleteModal" @onclick="()=>ShowModal(good)">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </AuthorizeView>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <!-- Edit modal-->
+                    <div class="modal fade" id="detailsModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Good Details</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Edit Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End edit modal-->
+                    <!-- Images modal-->
+                    <div class="modal fade" id="imagesModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Good Details</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Images Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End images modal-->
+                    <!-- Delete modal-->
+                    <div class="modal fade" id="deleteModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Delete Good</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Delete Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End delete modal-->
+                    <!-- Reject modal-->
+                    <div class="modal fade" id="rejectModal" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Reject Good</h4>
+                                    <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                                </div>
+
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <Reject Good="@Good" Error="@null" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End reject modal-->
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; }
+    private bool? Error { get; set; }
+    private string Response { get; set; }
+    private List<Good> Goods { get; set; }
+    private Good Good { get; set; } = new Good();
+    private string sortByPrice = "";
+    private string sortByName = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGoods();
+    }
+
+    private async Task GetGoods()
+    {
+        try
+        {
+            IsLoading = true;
+            Goods = await _httpClient.GetFromJsonAsync<List<Good>>($"api/goods/pending-approval");
+            IsLoading = false;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task Approve(Good good)
+    {
+        try
+        {
+            Error = null;
+            good.IsApprovedForSale = true;
+            var result = await _httpClient.PutAsJsonAsync($"api/Goods", good);
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void ShowModal(Good good)
+    {
+        Good = good;
+    }
+
+    private async Task CloseModal()
+    {
+        Good = new Good();
+        await GetGoods();
+    }
+
+    private void SortByPrice()
+    {
+        if (sortByPrice == "" || sortByPrice == "H - L")
+        {
+            sortByPrice = "L - H";
+            Goods = Goods.OrderBy(x => x.Price).ToList();
+        }
+        else
+        {
+            sortByPrice = "H - L";
+            Goods = Goods.OrderByDescending(x => x.Price).ToList();
+        }
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            Goods = Goods.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            Goods = Goods.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+
+}
+

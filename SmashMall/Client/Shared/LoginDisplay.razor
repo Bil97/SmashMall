@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        <h5 class="dropdown-header">@context.User.Identity.Name</h5>
+        <a class="dropdown-item" href="authentication/profile">Profile</a>
+
+        <NavLink class="dropdown-item" href="items/my-items" Match="NavLinkMatch.All">
+            <span>My Items</span>
+        </NavLink>
+        <NavLink class="dropdown-item" href="items/saved-items">
+            <span>Saved Items</span>
+        </NavLink>
+        <NavLink class="dropdown-item" href="goods/my-goods">
+            <span>My goods</span>
+        </NavLink>
+        <NavLink class="dropdown-item" href="orders/my-orders">
+            <span>My orders</span>
+        </NavLink>
+        <NavLink class="dropdown-item" href="deals/top">
+            <span>Top deals</span>
+        </NavLink>
+        <NavLink class="dropdown-item" href="goods/pending-approval">
+            <span>Goods approval</span>
+        </NavLink>
+
+        @if (context.User.IsInRole("Admin") || context.User.IsInRole("Manager"))
+        {
+            <NavLink class="dropdown-item" href="pickup">
+                <span>Pickup</span>
+            </NavLink>
+            <NavLink class="dropdown-item" href="towns">
+                <span>Towns</span>
+            </NavLink>
+        }
+        <button class="dropdown-item" @onclick="BeginSignOut">Log out</button>
+
+    </Authorized>
+    <NotAuthorized>
+        <a class="dropdown-item" href="authentication/register">Register</a>
+        <a class="dropdown-item" href="authentication/login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        try
+        {
+            await SignOutManager.SetSignOutState();
+
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            await _localStorage.RemoveItemAsync("userId");
+            StateContainer.OnChange += StateHasChanged;
+            StateContainer.SetCount(0);
+            StateContainer.SetPrice(0);
+            StateContainer.OnChange -= StateHasChanged;
+
+            Navigation.NavigateTo("authentication/logout");
+        }
+        catch { }
+    }
+}

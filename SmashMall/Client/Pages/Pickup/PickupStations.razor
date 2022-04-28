@@ -1,0 +1,191 @@
+﻿@page "/pickup"
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="card border-0">
+    <div class="card-header bg-white">
+        <span class="custom-bg-orange text-white p-2 mr-3 rounded d-md-none" style="cursor:pointer" onclick="openNav()"><strong>&#9776;</strong> </span>
+        <span class="card-title"><strong> SORT BY</strong> </span>
+
+        <button class="btn custom-bg-orange text-white ml-1" @onclick="SortByName">NAME @sortByName</button>
+
+        <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetPickUpStations">
+            Reload
+
+            @if (IsLoading)
+            {
+                <span class="spinner-border spinner-border-sm"></span>
+            }
+            else
+            {
+                <span class="oi oi-reload"></span>
+            }
+        </button>
+        <button class="btn custom-bg-orange text-white ml-1 float-right" data-toggle="modal" data-target="#addModal">
+            <span class="oi oi-plus mr-1" aria-hidden="true"></span> Add
+        </button>
+        <!-- Add modal -->
+        <div class="modal fade" id="addModal" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add Pickup station</h4>
+                        <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal"> &times;</button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <AddPickupStation PickupStation="new PickupStation()" Error="@null" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End add modal -->
+    </div>
+    <div class="card-body bg-white p-0">
+
+        @if (Stations == null)
+        {
+            <em>Loading...</em>
+        }
+        else
+        {
+            <table class="table table-hover table-responsive">
+                <thead>
+                    <tr>
+                        <th>Town</th>
+                        <th>Courier</th>
+                        <th>Initial weight limit (kg)</th>
+                        <th>Cost of Initial weight up to limit</th>
+                        <th>Cost of excess weight per kg</th>
+                        <th>Local delivery cost</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var station in Stations)
+                    {
+                        <tr>
+                            <td>@station.Town?.Name</td>
+                            <td>@station.Name</td>
+                            <td>@station.InitialWeight</td>
+                            @{ var initial = new CurrencyConverter(station.InitialWeightCost, BaseApi.Culture);
+                                <td>@initial.Currency</td>
+                            }
+                            @{ var excess = new CurrencyConverter(station.ExcessWeightCost, BaseApi.Culture);
+                                <td>@excess.Currency</td>
+                            }
+                            @{ var local = new CurrencyConverter(station.LocalDeliveryCost, BaseApi.Culture);
+                                <td>@local.Currency</td>
+                            }
+                            <td>
+                                <button class="btn-sm btn-primary m-1" data-toggle="modal" data-target="#editStation" @onclick="()=>UpdateStation(station)">Edit</button>
+                            </td>
+                            <td>
+                                <button class="btn-sm btn-danger m-1" data-toggle="modal" data-target="#deleteStation" @onclick="()=>UpdateStation(station)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <!-- Edit modal-->
+            <div class="modal fade" id="editStation" role="dialog">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit Pickup station</h4>
+                            <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <EditPickupStation PickupStation="Station" Error="@null" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- End edit modal-->
+
+            <!-- Delete modal-->
+            <div class="modal fade" id="deleteStation" role="dialog">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Delete Pickup station</h4>
+                            <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <DeletePickupStation PickupStation="Station" TownName="@Station?.Town?.Name" Error="@null" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- End delete modal-->
+        }
+
+    </div>
+</div>
+
+@code {
+    private List<PickupStation> Stations { get; set; }
+    private PickupStation Station { get; set; } = new PickupStation();
+    public bool IsLoading { get; set; }
+    private string sortByName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPickUpStations();
+    }
+
+    private async Task GetPickUpStations()
+    {
+        try
+        {
+            IsLoading = true;
+            Stations = await _httpClient.GetFromJsonAsync<List<PickupStation>>("api/pickup/stations");
+            IsLoading = false;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch { }
+
+    }
+
+    private async Task CloseModal()
+    {
+        Station = new PickupStation();
+        await GetPickUpStations();
+    }
+
+    private void UpdateStation(PickupStation station)
+    {
+        Station = station;
+    }
+
+    private void SortByName()
+    {
+        if (sortByName == "" || sortByName == "Z - A")
+        {
+            sortByName = "A - Z";
+            Stations=Stations.OrderBy(x => x.Name).ToList();
+        }
+        else
+        {
+            sortByName = "Z - A";
+            Stations=Stations.OrderByDescending(x => x.Name).ToList();
+        }
+    }
+
+}

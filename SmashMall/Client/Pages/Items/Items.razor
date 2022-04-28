@@ -1,0 +1,48 @@
+﻿@page "/{Item}"
+@page "/{Item}/{CategoryName}"
+@page "/{Item}/{CategoryName}/{SubcategoryName}"
+@page "/{Item}/{CategoryName}/{SubcategoryName}/{BrandName}"
+@page "/category/{CategoryName}"
+@page "/category/subcategory/brand/{BrandName}"
+@page "/deals/BlackFriday"
+@page "/deals/BlackFriday/{BlackFriday}"
+@page "/search/{Item}/{SubcategoryName}"
+@page "/goods/seller/{SellerId}"
+
+
+<div>
+    <Goods Item="@Item"  CategoryName="@CategoryName" SubcategoryName="@SubcategoryName" 
+           BrandName="@BrandName" MaxPrice="@MaxPrice" MinPrice="@MinPrice" BlackFriday="@BlackFriday"
+           SellerId="@SellerId" />
+</div>
+
+
+@code {
+    [Parameter]
+    public string Item { get; set; }
+
+    [Parameter]
+    public string FilterSearch { get; set; }
+
+    [Parameter]
+    public string CategoryName { get; set; }
+
+    [Parameter]
+    public string SubcategoryName { get; set; }
+
+    [Parameter]
+    public decimal? MaxPrice { get; set; }
+
+    [Parameter]
+    public decimal? MinPrice { get; set; }
+
+    [Parameter]
+    public string BrandName { get; set; }
+
+    [Parameter]
+    public string BlackFriday { get; set; }
+
+    [Parameter]
+    public string SellerId { get; set; }
+
+}

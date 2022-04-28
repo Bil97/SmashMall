@@ -1,0 +1,39 @@
+﻿@page "/items/myitems"
+@attribute [Authorize]
+
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <AccountNavMenu />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+         <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <AccountNavMenu />
+        </div>
+
+        <div id="accordion">
+            <div class="card border-0">
+                <div class="card-header bg-white">
+                    <a class="card-link" data-toggle="collapse" href="#goods">
+                        My Goods
+                    </a>
+                </div>
+                <div id="goods" class="collapse show" data-parent="#accordion">
+                    <div class="card-body p-0">
+                        <SmashMall.Client.Pages.Goods.Good.UserGoods />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+}

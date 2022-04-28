@@ -1,0 +1,169 @@
+﻿@page "/towns"
+
+    <h3>Towns</h3>
+    <EditForm Model="Town" OnValidSubmit="HandleSubmit"class="col-md-6">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="input-group mb-2">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Town name</span>
+            </div>
+            <InputText @bind-Value="Town.Name" class="form-control" placeholder="Town name" />
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-primary" disabled="@Submitting">
+                    Add
+                    @if (Submitting)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                    }
+                </button>
+            </div>
+        </div>
+    </EditForm>
+    @if (Error == true)
+    {
+        <div class="alert alert-warning alert-dismissible">
+            <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+            @Response
+        </div>
+    }
+    @if (Error == false)
+    {
+        <div class="alert alert-success alert-dismissible">
+            <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+            @Response
+        </div>
+    }
+
+    @if (PickupTowns == null)
+    {
+        <em>Loading</em>
+    }
+    else
+    {
+        foreach (var town in PickupTowns)
+        {
+            <div class="input-group mb-1">
+                <input value="@town.Name" class="form-control" @onchange="(e)=>UpdateTown(e.Value.ToString(),town)" />
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal" @onclick="()=>DeleteTown(town)">Delete</button>
+                </div>
+            </div>
+        }
+
+        <!-- Delete modal-->
+        <div class="modal fade" id="deleteModal" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Delete Town</h4>
+                        <button type="button" class="close" data-dismiss="modal" @onclick="@CloseModal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <DeleteTown Town="@Town" Error="@null" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- End delete modal-->
+    }
+
+@code {
+    private Town Town { get; set; } = new Town();
+    private List<Town> PickupTowns { get; set; }
+    private string Response { get; set; }
+    public bool Submitting { get; set; }
+    public bool? Error { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetTowns();
+    }
+
+    private async Task GetTowns()
+    {
+        try
+        {
+            PickupTowns = await _httpClient.GetFromJsonAsync<List<Town>>("api/pickup/towns");
+        }
+        catch { }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            Submitting = true;
+            var result = await _httpClient.PostAsJsonAsync<Town>("api/pickup/towns", Town);
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                Town = new Town();
+                await GetTowns();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch { }
+    }
+
+    private async Task UpdateTown(string value, Town town)
+    {
+        try
+        {
+            town.Name = value;
+            var result = await _httpClient.PutAsJsonAsync<Town>("api/pickup/towns", town);
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                await GetTowns();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch { }
+    }
+
+    private void DeleteTown(Town town)
+    {
+        Town = town;
+    }
+
+    private async Task CloseModal()
+    {
+        Town = new Town();
+        await GetTowns();
+    }
+
+}

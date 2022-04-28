@@ -1,0 +1,24 @@
+﻿@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@code {
+    protected override async void OnInitialized()
+    {
+        Navigation.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+
+        var userId = await _localStorage.GetItemAsStringAsync("userId");
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                var cart = await _http.Client.GetFromJsonAsync<CartModel>($"api/cart/count/{userId}");
+                if (cart != null)
+                {
+                    await _localStorage.SetItemAsync("userId", cart.UserId);
+                    StateContainer.SetCount(cart.ItemsCount);
+                    StateContainer.SetPrice(cart.TotalPrice);
+                }
+            }
+            catch { }
+        }
+    }
+}

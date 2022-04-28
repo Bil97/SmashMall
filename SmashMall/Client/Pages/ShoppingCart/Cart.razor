@@ -1,0 +1,169 @@
+﻿@page "/cart"
+
+<div class="card border-0">
+    <div class="card-header bg-white">
+        <a href="checkout" class="btn custom-bg-orange text-white rounded ml-2">Proceed to checkout </a>
+        <span class="card-text ml-5">Total: @TotalCost </span>
+        <button class="btn custom-bg-orange text-white ml-1 float-right" disabled="@IsLoading" @onclick="GetGoods">
+            Reload
+
+            @if (IsLoading)
+            {
+                <span class="spinner-border spinner-border-sm"></span>
+            }
+            else
+            {
+                <span class="oi oi-reload"></span>
+            }
+        </button>
+    </div>
+    <div class="card-body">
+
+        @if (GoodsCart == null)
+        {
+            <div class="text-center">Your cart is currently empty</div>
+        }
+        else if (GoodsCart?.Count == 0)
+        {
+            <div class="text-center">Your cart is currently empty</div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var cart in GoodsCart)
+                {
+                    <div class="col-lg-4 col-sm-6 rounded">
+                        <div class="card border-0 custom-hover-shadow h-100">
+                            <div class="card-body p-1">
+
+                                <a href="goods/@cart.GoodId/description" class="custom-nav-link">
+                                    @{ var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{cart.Good?.Images?.FirstOrDefault().Name}";
+                                        <img src="@source" alt="@cart.Good?.Name" class="d-block mx-auto img-fluid m-2">
+                                        <div class="card-title">@cart.Good.Name</div>
+                                    }
+                                </a>
+                                <div class="card-text">
+                                    Unit Price:
+                                    @{ var originalPrice = new CurrencyConverter(cart.Good.Price, BaseApi.Culture);}
+                                    @if (cart.Good.Discount > 0)
+                                    {
+                                        <del>@originalPrice.Currency</del> <span class="custom-bg-orange float-right">-@cart.Good.Discount</span>
+                                        var discount = (decimal)(100 - cart.Good.Discount);
+                                        var price = discount / 100 * cart.Good.Price;
+                                        var priceWithDiscount = new CurrencyConverter(price, BaseApi.Culture);
+                                        <strong>@priceWithDiscount.Currency</strong>
+                                    }
+                                    else
+                                    {
+                                        <strong>@originalPrice.Currency</strong>
+                                    }
+                                </div>
+                                <div class="card-text text-nowrap">
+                                    Quantity:
+                                    <button class="border-0 custom-bg-orange text-white" @onclick="()=>ChangeQuantity(cart.Id, cart.Quantity-1)">-</button>
+                                    @cart.Quantity
+                                    <button class="border-0 custom-bg-orange text-white" @onclick="()=>ChangeQuantity(cart.Id, cart.Quantity+1)">+</button>
+                                    <button class="border-0 ml-1 custom-bg-orange text-white" title="Remove from cart" @onclick="()=>RemoveFromCart(cart.Id)">&times;</button>
+                                </div>
+                                @{ var currency = new CurrencyConverter(cart.TotalPrice, BaseApi.Culture);
+                                    <div class="card-text">Total: <strong>@currency.Currency</strong></div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool IsLoading { get; set; }
+    private List<GoodCart> GoodsCart { get; set; }
+    private decimal TotalCost { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGoods();
+    }
+
+    private async Task GetGoods()
+    {
+        IsLoading = true;
+        try
+        {
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var result = await _http.Client.GetAsync($"api/cart/{userId}");
+
+            IsLoading = false;
+            if (result.IsSuccessStatusCode)
+            {
+                using var stream = await result.Content.ReadAsStreamAsync();
+
+                GoodsCart = await System.Text.Json.JsonSerializer.DeserializeAsync<List<GoodCart>>(stream,
+                 new System.Text.Json.JsonSerializerOptions
+                 {
+                     PropertyNameCaseInsensitive = true
+                 });
+
+                TotalCost = GoodsCart.Sum(x => x.TotalPrice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task ChangeQuantity(string cartId, int quantity)
+    {
+        try
+        {
+            //if (quantity <= 0) quantity = 1;
+            if (quantity <= 0) await RemoveFromCart(cartId);
+
+            var cartItem = new GoodCartModel { CartId = cartId, Quantity = quantity };
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            HttpResponseMessage result;
+            if (authState.User.Identity.IsAuthenticated)
+            {
+
+                result = await _httpClient.PutAsJsonAsync<GoodCartModel>($"api/cart/{userId}", cartItem);
+            }
+            else
+            {
+                result = await _http.Client.PutAsJsonAsync<GoodCartModel>($"api/cart/{userId}", cartItem);
+            }
+            if (result.IsSuccessStatusCode)
+            {
+                var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+                await _localStorage.SetItemAsync("userId", cart.UserId);
+                StateContainer.SetCount(cart.ItemsCount);
+                StateContainer.SetPrice(cart.TotalPrice);
+
+                await GetGoods();
+            }
+        }
+        catch { }
+    }
+
+    private async Task RemoveFromCart(string cartId)
+    {
+        try
+        {
+            var result = await _http.Client.DeleteAsync($"api/cart/{cartId}");
+            if (result.IsSuccessStatusCode)
+            {
+                var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+                await _localStorage.SetItemAsync("userId", cart.UserId);
+                StateContainer.SetCount(cart.ItemsCount);
+                StateContainer.SetPrice(cart.TotalPrice);
+
+                await GetGoods();
+            }
+        }
+        catch { }
+    }
+}

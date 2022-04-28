@@ -1,0 +1,98 @@
+﻿<div class="form-label-group">
+    <input type="text" @bind="TownName" class="form-control mb-1" placeholder="Courier name" readonly />
+    <label>Courier</label>
+</div>
+<div class="form-label-group">
+    <input type="text" @bind="PickupStation.Name" class="form-control mb-1" placeholder="Courier name" readonly />
+    <label>Courier</label>
+</div>
+
+<div class="form-label-group">
+    <input type="text" @bind="PickupStation.Description" class="form-control mb-1" placeholder="Courier name" readonly />
+    <label>Courier</label>
+</div>
+
+<div class="form-label-group">
+    <input type="number" @bind="PickupStation.InitialWeight" class="form-control mb-1" placeholder="Initial weight limit" readonly />
+    <label>Initial weight limit (Ksh)</label>
+</div>
+
+<div class="form-label-group">
+    <input type="number" @bind="PickupStation.InitialWeightCost" class="form-control mb-1" placeholder="Cost of initial weight upto limit" readonly />
+    <label>Cost of initial weight upto limit (Ksh)</label>
+</div>
+
+<div class="form-label-group">
+    <input type="number" @bind="PickupStation.ExcessWeightCost" class="form-control mb-1" placeholder="Cost of excess weight per kg" readonly />
+    <label>Cost of excess weight per kg (Ksh)</label>
+</div>
+
+<button type="submit" class="btn btn-danger btn-block mb-2" disabled="@Submitting" @onclick="HandleValidSubmit">
+    Delete
+    @if (Submitting)
+    {
+        <span class="spinner-border spinner-border-sm"></span>
+    }
+</button>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public PickupStation PickupStation { get; set; }
+    [Parameter]
+    public string TownName { get; set; }
+    private bool IsLoaded { get; set; }
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        Error = null;
+        try
+        {
+            Submitting = true;
+            var result = await _httpClient.DeleteAsync($"api/pickup/stations/{PickupStation.Id}");
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

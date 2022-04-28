@@ -1,0 +1,202 @@
+﻿@page "/checkout"
+@attribute [Authorize]
+@if (StateContainer.GoodsCount == 0)
+{
+    <div class="alert text-center">Your cart is currently empty</div>
+}
+else
+{
+    <div class="col-lg-7 col-lg-10 mx-auto">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title">Delivery method</div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col">
+                            <div class="card-title">Select your town</div>
+                            <select class="form-control" @onchange="SelectTown">
+                                <option disabled selected>Select your town</option>
+
+                                @if (Towns != null)
+                                {
+                                    foreach (var town in Towns)
+                                    {
+                                        <option value="@town.Id">@town.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col">
+                            <div class="card-title">Select pickup station</div>
+                            <select class="form-control" @onchange="SelectStation">
+                                @if (Stations != null)
+                                {
+                                    foreach (var station in Stations)
+                                    {
+                                        <option value="@station.Id">@station.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    @if (Station != null)
+                    {
+                        <div class="border mb-2 p-2">
+                            <p class="card-title">@Station?.Name</p>
+                            <p class="card-text">@Station?.Description</p>
+                            <p class="card-text">Shipping Cost: @ShippingCost</p>
+                        </div>
+
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" @onchange="LocalDelivery" />Deliver to home or office: @LocalShippingCost
+                            </label>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        @if (Station != null)
+        {
+            <div class="card mb-2">
+                <div class="card-header">
+                    <div class="card-title">Payment</div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-block" disabled="@Submitting" @onclick="ConfirmOrder">
+                            CONFIRM ORDER
+                            @if (Submitting)
+                            {
+                                <span class="spinner-border spinner-border-sm"></span>
+                            }
+                        </button>
+
+                        @if (Error == true)
+                        {
+                            <div class="alert alert-warning alert-dismissible">
+                                <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+                                @Response
+                            </div>
+                        }
+                        @if (Error == false)
+                        {
+                            <div class="alert alert-success alert-dismissible">
+                                <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+                                @Response
+                            </div>
+                        }
+
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+@code {
+    private string ShippingCost { get; set; }
+    private string LocalShippingCost { get; set; }
+    private double Weight { get; set; }
+    private List<Town> Towns { get; set; }
+    private List<PickupStation> Stations { get; set; }
+    private PickupStation Station { get; set; }
+    private bool localDelivery = false;
+    private bool Submitting { get; set; }
+    private bool? Error { get; set; }
+    private string Response { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetTowns();
+    }
+
+    private async Task GetTowns()
+    {
+        try
+        {
+            var towns = await _httpClient.GetFromJsonAsync<List<Town>>("api/pickup/towns");
+            Towns = towns.Where(x => x.PickupStations.Count > 0).ToList();
+        }
+        catch (AccessTokenNotAvailableException ex) { ex.Redirect(); }
+        catch { }
+    }
+
+    private async Task GetWeight()
+    {
+        try
+        {
+            var userId = await _localStorage.GetItemAsStringAsync("userId");
+            var cart = await _httpClient.GetFromJsonAsync<CartModel>($"api/cart/weight/{userId}");
+            await _localStorage.SetItemAsync("userId", cart.UserId);
+            Weight = cart.Weight;
+        }
+        catch { }
+    }
+
+    private void SelectTown(ChangeEventArgs e)
+    {
+        var townId = e.Value.ToString();
+        Stations = Towns?.FirstOrDefault(x => x.Id.ToString() == townId).PickupStations?.ToList();
+        Station = Stations?.FirstOrDefault();
+        ShippingFee();
+    }
+
+    private void SelectStation(ChangeEventArgs e)
+    {
+        var stationId = e.Value.ToString();
+        Station = Stations?.FirstOrDefault(x => x.Id.ToString() == stationId);
+        ShippingFee();
+    }
+
+    private void ShippingFee()
+    {
+        decimal? shippingCost = 0;
+        if (Weight <= Station?.InitialWeight)
+            shippingCost = Station?.InitialWeightCost;
+        else
+        {
+            var excessWeight = Weight - Station?.InitialWeight;
+            var cost = (decimal)excessWeight * Station?.ExcessWeightCost;
+            shippingCost = Station?.InitialWeightCost + cost;
+        }
+        var currency = new CurrencyConverter((decimal)shippingCost, BaseApi.Culture);
+        ShippingCost = currency.Currency;
+
+        var localShippingCost = Station?.LocalDeliveryCost;
+        localShippingCost ??= 0.00M;
+        var local = new CurrencyConverter((decimal)localShippingCost, BaseApi.Culture);
+        LocalShippingCost = local.Currency;
+    }
+
+    private void LocalDelivery(ChangeEventArgs e)
+    {
+
+        localDelivery = Convert.ToBoolean(e.Value.ToString());
+    }
+
+    private async Task ConfirmOrder()
+    {
+        Error = null;
+        Submitting = true;
+        var order = new GoodOrderModel { LocalDelivery = localDelivery, PickupStationId = Station.Id };
+        var result = await _httpClient.PostAsJsonAsync<GoodOrderModel>($"api/orders", order);
+        Submitting = false;
+        if (result.IsSuccessStatusCode)
+        {
+            Error = false;
+            var cart = await result.Content.ReadFromJsonAsync<CartModel>();
+            await _localStorage.SetItemAsync("userId", cart.UserId);
+            StateContainer.SetCount(cart.ItemsCount);
+            StateContainer.SetPrice(cart.TotalPrice);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Error = true;
+            Response = await result.Content.ReadAsStringAsync();
+        }
+    }
+}
+

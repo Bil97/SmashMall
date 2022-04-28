@@ -1,0 +1,58 @@
+﻿<EditForm Model="@Brand" OnValidSubmit="@Delete">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="input-group mb-3">
+        <InputText @bind-Value="Brand.Name" class="form-control" placeholder="Brand name" disabled />
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
+    </div>
+</EditForm>
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code{
+    [Parameter]
+    public GoodBrand Brand { get; set; }
+    public bool? Error { get; set; }
+    public string Response { get; set; }
+
+    private async Task Delete()
+    {
+        try
+        {
+            var postResult = await _httpClient.DeleteAsync($"api/GoodsBrands/{Brand.Id}");
+            Response = await postResult.Content.ReadAsStringAsync();
+            if (postResult.IsSuccessStatusCode)
+            {
+                Error = false;
+            }
+            else
+            {
+                Error = true;
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

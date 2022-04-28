@@ -1,0 +1,77 @@
+﻿<EditForm Model="@Rejected" OnValidSubmit="@HandleValidSubmit" class="mb-2">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-label-group">
+        <InputText @bind-Value="Good.Name" class="form-control mb-1" placeholder="Item name" diasbled/>
+        <label>Item name</label>
+    </div>
+    <div class="form-label-group">
+        <InputTextArea @bind-Value="Rejected.ReasonForRejection" class="form-control mb-1" placeholder="Reasons for rejection" />
+        <label>Reasons for rejection (Ksh)</label>
+    </div>
+
+    <button type="submit" class="btn btn-danger btn-block mb-3" disabled="@Submitting">
+        Submit
+        @if (Submitting)
+        {
+            <span class="spinner-border spinner-border-sm"></span>
+        }
+    </button>
+</EditForm>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public Good Good { get; set; }
+    public RejectedGood Rejected { get; set; } = new RejectedGood();
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Submitting = true;
+            Error = null;
+            Rejected.Id = Good.Id;
+            var result = await _httpClient.PutAsJsonAsync($"api/Goods/reject", Rejected);
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

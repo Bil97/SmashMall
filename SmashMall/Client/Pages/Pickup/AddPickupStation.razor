@@ -1,0 +1,132 @@
+﻿<EditForm Model="@PickupStation" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputSelect @bind-Value="@PickupStation.TownId" class="form-control mb-1">
+        <option selected disabled>Choose your town</option>
+        @if (Towns != null)
+        {
+            @foreach (var town in Towns)
+            {
+                <option value="@town.Id">@town.Name</option>
+            }
+        }
+    </InputSelect>
+
+    <div class="form-label-group">
+        <InputText @bind-Value="PickupStation.Name" class="form-control mb-1" placeholder="Courier name" />
+        <label>Courier</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputText @bind-Value="PickupStation.Description" class="form-control mb-1" placeholder="Courier description" />
+        <label>Courier description</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="PickupStation.InitialWeight" class="form-control mb-1" placeholder="Initial weight limit" />
+        <label>Initial weight limit (kg)</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="PickupStation.InitialWeightCost" class="form-control mb-1" placeholder="Cost of initial weight upto limit" />
+        <label>Cost of initial weight upto limit (Ksh)</label>
+    </div>
+
+    <div class="form-label-group">
+        <InputNumber @bind-Value="PickupStation.ExcessWeightCost" class="form-control mb-1" placeholder="Cost of excess weight per kg" />
+        <label>Cost of excess weight per kg (Ksh)</label>
+    </div>
+    <div class="form-label-group">
+        <InputNumber @bind-Value="PickupStation.LocalDeliveryCost" class="form-control mb-1" placeholder="Cost of delivery to home or office" />
+        <label>Cost of delivery to home or office (Ksh)</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block mb-2" disabled="@Submitting">
+        Add
+        @if (Submitting)
+        {
+            <span class="spinner-border spinner-border-sm"></span>
+        }
+    </button>
+</EditForm>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public PickupStation PickupStation { get; set; }
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+    private List<Town> Towns { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetTowns();
+    }
+
+    private async Task GetTowns()
+    {
+        try
+        {
+            Towns = await _httpClient.GetFromJsonAsync<List<Town>>($"api/pickup/towns");
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch { }
+
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Error = null;
+        try
+        {
+            Submitting = true;
+            var result = await _httpClient.PostAsJsonAsync<PickupStation>($"api/pickup/stations", PickupStation);
+            Submitting = false;
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                Response = await result.Content.ReadAsStringAsync();
+                PickupStation = new PickupStation();
+            }
+            else
+            {
+                Error = true;
+                Response = await result.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(Response.Trim()))
+                {
+                    Response = result.StatusCode.ToString();
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+}

@@ -1,0 +1,152 @@
+﻿<div class="input-group mb-3">
+    <EditForm Model="@Good">
+        <InputFile class="form-control-file border" OnChange="OnInputFileChange" disabled="@Submitting" multiple />
+    </EditForm>
+</div>
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+
+@if (Good?.Images?.Count > 0)
+{
+    <div class="row">
+        @foreach (var image in Good?.Images)
+        {
+            <div class="col-xl-2 col-lg-3 col-sm-4 col-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        @{
+                            var source = $"{BaseApi.Url}{BaseApi.ItemsPhotosApi}/{image.Name}";
+                            <img src="@source" alt="@Good?.Name" class="mx-auto d-block img-fluid m-2">
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-sm btn-block btn-danger" @onclick="()=>Delete(image.Id)">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <p>No image to display</p>
+    </div>
+}
+@code {
+    [Parameter]
+    public bool? Error { get; set; }
+    [Parameter]
+    public Good Good { get; set; }
+    private bool Submitting { get; set; }
+    private string Response { get; set; }
+
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var format = "image/png";
+            var content = new MultipartFormDataContent();
+
+            foreach (var imageFile in e.GetMultipleFiles())
+            {
+                var resizedImageFile = await imageFile.RequestImageFileAsync(format, 200, 150);
+                var file = new byte[resizedImageFile.Size];
+                await resizedImageFile.OpenReadStream().ReadAsync(file);
+                string fileName = "image.png";
+                content.Add(new ByteArrayContent(file), "formFile", fileName );
+                
+            }
+            content.Add(new StringContent(Good.Id.ToString()), "goodId");
+            Submitting = true;
+            Error = null;
+
+                var result = await _httpClient.PostAsync($"api/files/goods", content);
+                Response = await result.Content.ReadAsStringAsync();
+                Submitting = false;
+
+                if (result.IsSuccessStatusCode)
+                {
+                    file = null;
+                    await GetGoodImages();
+                    Error = false;
+                }
+                else
+                {
+                    Error = true;
+                }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+    private async Task GetGoodImages()
+    {
+        try
+        {
+            var result = await _httpClient.GetAsync($"api/files/goods/images/{Good.Id}");
+            if (result.IsSuccessStatusCode)
+            {
+                using var stream = await result.Content.ReadAsStreamAsync();
+                Good.Images = await System.Text.Json.JsonSerializer.DeserializeAsync<List<GoodImage>>(stream,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+            }
+        }
+        catch { }
+    }
+
+    private async Task Delete(string id)
+    {
+        try
+        {
+            Submitting = true;
+            Error = null;
+            var result = await _httpClient.DeleteAsync($"api/files/goods/{id}");
+            Submitting = false;
+
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                await GetGoodImages();
+                Error = false;
+            }
+            else
+            {
+                Error = true;
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+}

@@ -1,0 +1,229 @@
+﻿@page "/goods/{GoodId}/details"
+@attribute [Authorize]
+
+@if (Error == true)
+{
+    <div class="alert alert-warning alert-dismissible text-center">
+        <button type="button" @onclick="(() => { Error = null; })" class="close">&times;</button>
+        @Response
+    </div>
+}
+@if (Error == false)
+{
+    <div class="alert alert-success alert-dismissible text-center">
+        <button class="close" @onclick="(() => { Error = null; })">&times;</button>
+        @Response
+    </div>
+}
+<div class="row">
+    <div class="col-lg-2 col-md-3">
+        <div class="d-none d-md-block">
+            <div class="card border-0 shadow">
+                <div class="card-body p-2">
+                    <GoodsNavMenu />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-10 col-md-9 mb-3 p-1">
+         <div id="filtersNav" class="filters-nav bg-white d-md-none">
+            <button class="btn closebtn custom-nav-link" onclick="closeNav()">&times;</button>
+            <GoodsNavMenu />
+        </div>
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <div class="card-title">Product Description</div>
+            </div>
+            <div class="card-body">
+                <EditForm Model="Good" OnValidSubmit="SaveDescription">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <InputTextArea @bind-Value="Good.Description" class="form-control"></InputTextArea>
+                    <button type="submit" class="btn custom-bg-orange text-white mt-2 mb-2" disabled="@SubmittingDescription">
+                        Save
+                        @if (SubmittingDescription)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                        }
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+
+        <div class="card border-0">
+            <div class="card-header bg-white">
+                <div class="card-title">Key features</div>
+            </div>
+            <div class="card-body">
+                <EditForm Model="KeyFeature" OnValidSubmit="SaveFeature">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="input-group">
+                        <InputText @bind-Value="KeyFeature.Feature" class="form-control" />
+                    </div>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn custom-bg-orange text-white mt-2 mb-2 btn-block">Add</button>
+                    </div>
+                </EditForm>
+
+                @if (KeyFeatures == null)
+                {
+                    <em>Loading...</em>
+                }
+                else
+                {
+                    foreach (var feature in KeyFeatures)
+                    {
+                        <div class="m-2">
+                            <EditForm Model="feature" OnValidSubmit="()=>UpdateFeature(feature)">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="input-group">
+                                    <InputText @bind-Value="feature.Feature" class="form-control" />
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn custom-bg-orange text-white">Update</button>
+                                        <button type="button" class="btn btn-danger" @onclick="()=>DeleteFeature(feature)">Delete</button>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string GoodId { get; set; }
+    private Good Good { get; set; }
+    private bool SubmittingDescription { get; set; }
+    private bool? Error { get; set; }
+    private string Response { get; set; }
+    private GoodKeyFeature KeyFeature { get; set; }
+    public List<GoodKeyFeature> KeyFeatures { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Good = new Good();
+        KeyFeature = new GoodKeyFeature();
+        await GetGood();
+    }
+
+    private async Task GetGood()
+    {
+        try
+        {
+            Good = await _httpClient.GetFromJsonAsync<Good>($"api/Goods/good/{GoodId}");
+            KeyFeatures = Good?.KeyFeatures.ToList();
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+        catch { }
+    }
+
+    private async Task SaveDescription()
+    {
+        try
+        {
+            SubmittingDescription = true;
+            var result = await _httpClient.PutAsJsonAsync<Good>($"api/Goods", Good);
+            SubmittingDescription = false;
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                await GetGood();
+            }
+            else Error = true;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+    }
+
+    private async Task SaveFeature()
+    {
+        try
+        {
+            KeyFeature.GoodId = Good.Id;
+            var result = await _httpClient.PostAsJsonAsync<GoodKeyFeature>($"api/Goods/key-features", KeyFeature);
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                KeyFeature = new GoodKeyFeature();
+                await GetGood();
+            }
+            else Error = true;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+    }
+
+    private async Task UpdateFeature(GoodKeyFeature keyFeature)
+    {
+        try
+        {
+            var result = await _httpClient.PutAsJsonAsync<GoodKeyFeature>($"api/Goods/key-features", keyFeature);
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                await GetGood();
+            }
+            else Error = true;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+    }
+
+    private async Task DeleteFeature(GoodKeyFeature keyFeature)
+    {
+        try
+        {
+            var result = await _httpClient.DeleteAsync($"api/Goods/key-features/{keyFeature.Id}");
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                await GetGood();
+            }
+            else Error = true;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+    }
+
+    private async Task SaveSpecification()
+    {
+        try
+        {
+            var result = await _httpClient.PutAsJsonAsync<Good>($"api/Goods/{GoodId}", Good);
+            Response = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                Error = false;
+                await GetGood();
+            }
+            else Error = true;
+        }
+        catch (AccessTokenNotAvailableException ex)
+        {
+            ex.Redirect();
+        }
+    }
+
+}
